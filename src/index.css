@@ -1,0 +1,139 @@
+/* Tailwind CSS */
+@import 'tailwindcss';
+
+/* fonte título*/
+@font-face {
+  font-family: 'Lexend';
+  src: url('/fonts/Lexend/Lexend-VariableFont_wght.ttf');
+}
+
+/* fonte corpo*/
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto/Roboto-VariableFont_wdth\,wght.ttf');
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+:root {
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .header {
+    @apply flex items-center justify-between h-[12vh] w-full shadow-md py-[2vh] px-[5vw] bg-white;
+    & nav {
+      @apply bg-white;
+
+      & ul {
+        @apply flex items-center justify-center gap-[1vw];
+      }
+    }
+  }
+
+  h1 {
+    @apply font-['Lexend'] font-black uppercase;
+  }
+
+  .titulo-2 {
+    @apply text-3xl font-['Lexend'] font-bold;
+  }
+
+  .logo {
+    @apply h-[8vh];
+  }
+
+  main {
+    @apply flex flex-col items-center min-w-[300px] w-[80vw] max-w-[1400px] max-lg:w-[96vw] min-h-[70vh] my-[2vh] bg-white rounded-lg px-[4vw] pb-[2vh];
+  }
+
+  .card-inicial {
+    @apply bg-cc-azul rounded-4xl p-8 drop-shadow-lg min-w-[240px];
+
+    & p {
+      @apply text-white mt-8 text-lg;
+    }
+  }
+
+  .botao {
+    @apply flex items-center justify-center gap-2 p-3 px-4 rounded-2xl bg-cc-azul text-lg text-white hover:scale-110 hover:font-bold transition-all ease-in duration-200 min-w-[150px] mt-[2vh] hover:bg-cc-azul-escuro;
+  }
+
+  .form {
+    @apply bg-cc-cinza p-4 my-[2vh] max-md:mx-[2vw] rounded-2xl;
+    & form {
+      @apply flex flex-col items-center;
+    }
+
+    & fieldset {
+      @apply w-full;
+    }
+
+    & fieldset > div:not(.input-container) {
+      @apply flex max-md:flex-col;
+    }
+
+    & .input-container {
+      @apply flex flex-col p-2;
+    }
+
+    & label {
+      @apply mb-[1vh];
+    }
+
+    & input:not(input[type='radio'], input[type='checkbox']),
+    select,
+    textarea {
+      @apply bg-white p-2 rounded-lg w-[20vw] min-w-[250px] shadow-md;
+    }
+
+    & textarea {
+      @apply w-auto;
+    }
+
+    & button {
+      @apply flex items-center justify-center gap-2 p-3 px-4 rounded-2xl bg-cc-azul text-lg text-white hover:scale-110 hover:font-bold transition-all ease-in duration-200 min-w-[150px] mt-[2vh] hover:bg-cc-azul-escuro;
+    }
+  }
+
+  .form-erro {
+    @apply px-2 text-red-400 mx-auto p-2 rounded-lg bg-red-50 outline-red-400 outline-1 text-center
+  }
+
+  .detalhes-laterais {
+    @apply before:content-[""] before:w-[2vw] before:h-4/5 before:bg-cc-cinza-escuro before:rounded-l-xl before:absolute before:-left-[2vw] after:content-[""] after:w-[2vw] after:h-4/5 after:bg-cc-cinza-escuro after:rounded-r-xl after:absolute after:-right-[2vw];
+  }
+}
+
+.texto-com-quebra {
+  white-space: pre-line;
+}
+
+@theme {
+  /* cores */
+  --color-cc-azul: #1e77d0;
+  --color-cc-azul-escuro: #0251a1;
+  --color-cc-preto: #2d2d2d;
+  --color-cc-cinza: #d0e9f7;
+  --color-cc-cinza-escuro: #98b5c4;
+
+  /* animações */
+  --animate-infinite-scroll: infinite-scroll 25s linear infinite;
+
+  @keyframes infinite-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+}

@@ -1,0 +1,6 @@
+flask
+flask-cors
+sendgrid
+oracledb
+APScheduler
+python-dotenv
