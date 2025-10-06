@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ibm-watson/assistant-web-chat-react": "^2.0.1",
+    "npm": "^11.6.1",
     "postcss-cli": "^11.0.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
