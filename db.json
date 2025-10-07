@@ -6,7 +6,15 @@
     "eject": "react-scripts eject"
   },
   "acompanhantes": [],
-  "avaliacoes": [],
+  "avaliacoes": [
+    {
+      "id": "470a",
+      "especialidade": "optometrista",
+      "nota": "5",
+      "comentario": "",
+      "data_avaliacao": "2025-10-07T22:17:20.639Z"
+    }
+  ],
   "consultas": [],
   "contatos": [
     {
