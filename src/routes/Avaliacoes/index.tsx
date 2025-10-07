@@ -1,57 +1,91 @@
+import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { FaStar } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
 import Titulo from '../../components/Titulo/Titulo'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
-import { formatarData } from '../../utils/formatarData'
-const URL_AVALIACOES = import.meta.env.VITE_API_BASE_AVALIACOES;
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import type { tipoAvaliacao } from '../../types/tipoAvaliacao'
+import MensagemErro from '../../components/MensagemErro/MensagemErro'
+const URL_AVALIACOES = import.meta.env.VITE_API_BASE_AVALIACOES
 
 function Avaliacoes () {
-  const [enviado, setEnviado] = useState(false)
-  const [dataSelecionada, setDataSelecionada] = useState('')
-  const [especialidade, setEspecialidade] = useState('')
-  const [nota, setNota] = useState(1)
-  const [comentario, setComentario] = useState('')
-  const [erro, setErro] = useState('')
+  const [nota, setNota] = useState<number>(0)
+  const [enviado, setEnviado] = useState<boolean>(false)
+
   const navigate = useNavigate()
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setErro('')
-
-    const data = new Date(dataSelecionada)
-    const hoje = new Date()
-    const limite = new Date()
-    limite.setDate(hoje.getDate() - 14)
-
-    if (data < limite) {
-      setErro('Avaliação expirada. Selecione uma data válida.')
-      return
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<tipoAvaliacao>()
+  /*
+    const [dataSelecionada, setDataSelecionada] = useState('')
+    const [especialidade, setEspecialidade] = useState('')
+    const [nota, setNota] = useState(1)
+    const [comentario, setComentario] = useState('')
+    const [erro, setErro] = useState('')
+    const navigate = useNavigate()
+  
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      setErro('')
+  
+      const data = new Date(dataSelecionada)
+      const hoje = new Date()
+      const limite = new Date()
+      limite.setDate(hoje.getDate() - 14)
+  
+      if (data < limite) {
+        setErro('Avaliação expirada. Selecione uma data válida.')
+        return
+      }
+  
+      if (data > hoje) {
+        setErro('Data inválida. É preciso fazer a teleconsulta antes de avaliar.')
+        return
+      }
+  
+      try {
+        const avaliacaoPayload = {
+          nota,
+          comentario,
+          data_valiacao: formatarData(dataSelecionada)
+        }
+  
+        const response = await fetch(`${URL_AVALIACOES}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(avaliacaoPayload)
+        })
+  
+        if (!response.ok) throw new Error('Erro ao registrar avaliação.')
+  
+        setEnviado(true)
+      } catch {
+        setErro('Erro ao enviar avaliação. Tente novamente.')
+      }
     }
+  */
 
-    if (data > hoje) {
-      setErro('Data inválida. É preciso fazer a teleconsulta antes de avaliar.')
-      return
+  const onSubmit: SubmitHandler<tipoAvaliacao> = async data => {
+    const avaliacao = {
+      // id: "abc",
+      especialidade: data.especialidade,
+      nota: data.nota,
+      comentario: data.comentario,
+      data_avaliacao: new Date()
     }
 
     try {
-      const avaliacaoPayload = {
-        nota,
-        comentario,
-        data_valiacao: formatarData(dataSelecionada)
-      }
-
-      const response = await fetch(`${URL_AVALIACOES}`, {
+      await fetch(URL_AVALIACOES, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(avaliacaoPayload)
+        body: JSON.stringify(avaliacao)
       })
-
-      if (!response.ok) throw new Error('Erro ao registrar avaliação.')
-
       setEnviado(true)
     } catch {
-      setErro('Erro ao enviar avaliação. Tente novamente.')
+      console.error('Erro ao enviar avaliação')
     }
   }
 
@@ -59,60 +93,40 @@ function Avaliacoes () {
     <main>
       <Titulo titulo='Avaliação' />
       <section className='form'>
-        {erro && <p className='form-erro'>{erro}</p>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <fieldset>
-            <div>
-              <div className='input-container'>
-                <label htmlFor='idConsulta'>
-                  Qual foi sua teleconsulta?{' '}
-                  <span className='text-red-500 font-bold'>*</span>
-                </label>
-                <select
-                  name='consulta'
-                  id='idConsulta'
-                  value={especialidade}
-                  onChange={e => setEspecialidade(e.target.value)}
-                  required
-                >
-                  <option value='' disabled>
-                    Selecione uma opção
-                  </option>
-                  <option value='fisioterapeuta'>Fisioterapeuta</option>
-                  <option value='cardiologista'>Cardiologista</option>
-                  <option value='neurologista'>Neurologista</option>
-                  <option value='optometrista'>Optometrista</option>
-                  <option value='ortopedista'>Ortopedista</option>
-                </select>
-              </div>
-              <div className='input-container'>
-                <label htmlFor='idDataConsulta'>
-                  Quando foi sua teleconsulta?{' '}
-                  <span className='text-red-500 font-bold'>*</span>
-                </label>
-                <input
-                  type='datetime-local'
-                  id='idDataConsulta'
-                  name='dataConsulta'
-                  value={dataSelecionada}
-                  onChange={e => setDataSelecionada(e.target.value)}
-                  required
-                />
-              </div>
+            <div className='input-container'>
+              <label htmlFor='idEspecialidade'>
+                Qual foi sua teleconsulta?
+              </label>
+              <select
+                id='idEspecialidade'
+                defaultValue=''
+                {...register('especialidade', {
+                  required: 'Campo obrigatório'
+                })}
+              >
+                <option value='' disabled>
+                  Selecione uma opção
+                </option>
+                <option value='fisioterapeuta'>Fisioterapeuta</option>
+                <option value='cardiologista'>Cardiologista</option>
+                <option value='neurologista'>Neurologista</option>
+                <option value='optometrista'>Optometrista</option>
+                <option value='ortopedista'>Ortopedista</option>
+              </select>
+              <MensagemErro error={errors.especialidade} />
             </div>
             <div className='input-container'>
-              <label htmlFor='idNota'>
-                Deixe a nota aqui{' '}
-                <span className='text-red-500 font-bold'>*</span>
-              </label>
-              <div className='flex items-center justify-evenly w-[50%]'>
+              <label htmlFor='idNota'>Dê uma nota a sua teleconsulta</label>
+              <div className='flex items-center justify-evenly w-full'>
                 {[1, 2, 3, 4, 5].map(estrela => (
                   <label key={estrela} className='cursor-pointer'>
                     <input
                       type='radio'
-                      name='rating'
                       value={estrela}
                       className='sr-only peer'
+                      {...register('nota', { required: 'Campo obrigatório' })}
                       onChange={() => setNota(estrela)}
                     />
                     <FaStar
@@ -125,16 +139,14 @@ function Avaliacoes () {
                   </label>
                 ))}
               </div>
+              <MensagemErro error={errors.nota} />
             </div>
             <div className='input-container'>
-              <label htmlFor='idComentario'>
-                Algum comentário sobre sua teleconsulta?
-              </label>
-              <textarea
+              <label htmlFor='idComentario'>Algum comentário?</label>
+              <input
+                type='text'
                 id='idComentario'
-                name='comentario'
-                rows={2}
-                onChange={e => setComentario(e.target.value)}
+                {...register('comentario')}
               />
             </div>
           </fieldset>
