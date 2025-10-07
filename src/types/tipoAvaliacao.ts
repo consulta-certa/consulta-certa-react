@@ -1,6 +1,6 @@
 export type tipoAvaliacao = {
     id: string;
+    especialidade: string;
     nota: number;
-    comentario: string;
-    data_valiacao: string;
+    comentario: string | null;
 }
