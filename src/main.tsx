@@ -16,7 +16,8 @@ import QuemSomos from './routes/QuemSomos'
 import Termos from './routes/Termos'
 import Cadastro from './routes/Cadastro'
 import Entrada from './routes/Entrada'
-import { AuthProvider } from './context/AuthProvider'
+import { AuthProvider } from './context/AuthContext'
+import AuthRoute from './context/AuthRoute'
 
 const router = createBrowserRouter([
   {
@@ -26,14 +27,42 @@ const router = createBrowserRouter([
     children: [
       { path: '/ajuda', element: <Ajuda /> },
       { path: '/avaliar-teleconsulta', element: <Avaliacoes /> },
-      { path: '/cadastrar', element: <Cadastro /> },
+      {
+        path: '/cadastrar',
+        element: (
+          <AuthRoute restrito={false}>
+            <Cadastro />
+          </AuthRoute>
+        )
+      },
       { path: '/contato', element: <Contato /> },
-      { path: '/entrar', element: <Entrada /> },
+      {
+        path: '/entrar',
+        element: (
+          <AuthRoute restrito={false}>
+            <Entrada />
+          </AuthRoute>
+        )
+      },
       { path: '/guias/guia/:name', element: <Guia /> },
       { path: '/', element: <Home /> },
-      { path: '/lembretes', element: <Lembretes /> },
+      {
+        path: '/lembretes',
+        element: (
+          <AuthRoute restrito>
+            <Lembretes />
+          </AuthRoute>
+        )
+      },
       { path: '/guias', element: <ListaGuias /> },
-      { path: '/perfil', element: <Perfil /> },
+      {
+        path: '/perfil',
+        element: (
+          <AuthRoute restrito>
+            <Perfil />
+          </AuthRoute>
+        )
+      },
       { path: '/quem-somos', element: <QuemSomos /> },
       { path: '/termos', element: <Termos /> }
     ]
