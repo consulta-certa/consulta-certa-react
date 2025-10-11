@@ -3,6 +3,8 @@ export type tipoPaciente = {
     nome: string;
     telefone: string;
     email: string;
+    emailConfirmado: string;
     senha: string;
-    acompanhante: boolean;
+    senhaConfirmada: string;
+    acompanhante: string;
 }

@@ -1,74 +1,76 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Titulo from '../../components/Titulo/Titulo'
-import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext';
-const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES;
+import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import type { tipoPaciente } from '../../types/tipoPaciente'
+import MensagemErro from '../../components/MensagemErro/MensagemErro'
+import { ImEye, ImEyeBlocked } from 'react-icons/im'
+const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
 function Cadastro () {
-  const { paciente } = useAuth()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (paciente) {
-      navigate('/', { replace: true })
-    }
-  }, [paciente, navigate])
-
   const { login } = useAuth()
-  const [nome, setNome] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [email, setEmail] = useState('')
-  const [emailConfirmado, setEmailConfirmado] = useState('')
-  const [senha, setSenha] = useState('')
-  const [senhaConfirmada, setSenhaConfirmada] = useState('')
-  const [acompanhante, setAcompanhante] = useState(false)
-  const [erro, setErro] = useState('')
+  const [mostrar, setMostrar] = useState<boolean>(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setErro('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    watch
+  } = useForm<tipoPaciente>()
 
-    if (!nome.trim() || nome.length < 2) {
-      setErro('Nome inválido.')
-      return
-    }
-    if (!telefone.trim() || !/^\d{10,11}$/.test(telefone.replace(/\D/g, ''))) {
-      setErro('Telefone inválido. Exemplo de telefone correto: 11999999999).')
-      return
-    }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErro('Email inválido.')
-      return
-    }
-    if (email !== emailConfirmado) {
-      setErro('Os emails precisam ser iguais.')
-      return
-    }
-    if (senha.length < 6) {
-      setErro('Senha deve ter pelo menos 6 caracteres.')
-      return
-    }
-    if (senha !== senhaConfirmada) {
-      setErro('As senhas precisam ser iguais.')
-      return
-    }
+  const watchEmail = watch('email')
+  const watchSenha = watch('senha')
 
-    const perfil = { nome, telefone, email, senha, acompanhante }
-
+  const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
-      const response = await fetch(`${URL_PACIENTES}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(perfil)
-      })
+      const response = await fetch(URL_PACIENTES)
+      const dataPaciente = await response.json()
+      console.log(dataPaciente)
 
-      if (!response.ok) throw new Error('Erro ao salvar o perfil')
+      const emailExiste = dataPaciente.some(
+        (p: tipoPaciente) => p.email === data.email
+      )
+      const telefoneExiste = dataPaciente.some(
+        (p: tipoPaciente) => p.telefone === data.telefone
+      )
 
-      const data = await response.json()
-      login(data)
-      navigate('/lembretes', { replace: true })
+      if (emailExiste) {
+        setError('email', { type: 'manual', message: 'Email já cadastrado' })
+      }
+
+      if (telefoneExiste) {
+        setError('telefone', {
+          type: 'manual',
+          message: 'Telefone já cadastrado'
+        })
+      }
+
+      if (!emailExiste && !telefoneExiste) {
+        const dataPayload = {
+          // id: 'idgerado',
+          nome: data.nome.trim(),
+          telefone: data.telefone.replace(/\D/g, ''),
+          email: data.email,
+          emailConfirmado: data.emailConfirmado,
+          senha: data.senha,
+          senhaConfirmada: data.senhaConfirmada,
+          acompanhante: data.acompanhante ? 'S' : 'N'
+        }
+
+        console.log(dataPayload)
+
+        await fetch(URL_PACIENTES, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataPayload)
+        })
+
+        login(data)
+      }
     } catch {
-      setErro('Erro ao enviar os dados. Tente novamente mais tarde.')
+      console.error('Erro ao acessar servidor')
     }
   }
 
@@ -76,8 +78,7 @@ function Cadastro () {
     <main>
       <Titulo titulo='Criar perfil' />
       <section className='form'>
-        {erro && <p className='form-erro'>{erro}</p>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <fieldset>
             <div>
               <div className='input-container'>
@@ -85,24 +86,47 @@ function Cadastro () {
                   Nome <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.nome ? 'outline-1 outline-red-500' : 'outline-none'
+                  }
                   type='text'
-                  name='nome'
                   id='idNome'
-                  required
-                  onChange={e => setNome(e.target.value)}
+                  {...register('nome', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[A-Za-zÀ-ÿ]+(?: [A-Za-zÀ-ÿ]+)*$/,
+                      message: 'Precisa ser apenas letras'
+                    },
+                    minLength: {
+                      value: 3,
+                      message: 'Precisa de pelo menos 3 letras'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.nome} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idTelefone'>
                   Telefone <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.telefone
+                      ? 'outline-1 outline-red-500'
+                      : 'outline-none'
+                  }
                   type='tel'
-                  name='telefone'
                   id='idTelefone'
-                  required
-                  onChange={e => setTelefone(e.target.value)}
+                  {...register('telefone', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value:
+                        /^\(?[1-9]{2}\)?[\s-]?(?:9[0-9]{4}|[2-5][0-9]{3})[\s-]?[0-9]{4}$/,
+                      message: 'Telefone inválido'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.telefone} />
               </div>
             </div>
             <div>
@@ -111,64 +135,117 @@ function Cadastro () {
                   Email <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.email ? 'outline-1 outline-red-500' : 'outline-none'
+                  }
                   type='email'
-                  name='email'
                   id='idEmail'
-                  required
-                  onChange={e => setEmail(e.target.value)}
+                  {...register('email', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: 'Email inválido'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.email} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idEmailConfirmado'>
-                  Confirmar email{' '}
-                  <span className='text-red-500 font-bold'>*</span>
+                  Confirmar email  <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.emailConfirmado
+                      ? 'outline-1 outline-red-500'
+                      : 'outline-none'
+                  }
                   type='email'
-                  name='emailConfirmado'
                   id='idEmailConfirmado'
-                  required
-                  onChange={e => setEmailConfirmado(e.target.value)}
+                  {...register('emailConfirmado', {
+                    required: 'Campo obrigatório',
+                    validate: value => {
+                      return value === watchEmail || 'Emails não estão iguais'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.emailConfirmado} />
               </div>
             </div>
             <div>
               <div className='input-container'>
-                <label htmlFor='idSenha'>
-                  Senha <span className='text-red-500 font-bold'>*</span>
-                </label>
-                <input
-                  type='password'
-                  name='senha'
-                  id='idSenha'
-                  required
-                  onChange={e => setSenha(e.target.value)}
-                />
+                <label htmlFor='id
+                Senha'>Senha <span className='text-red-500 font-bold'>*</span>
+              </label>
+                <div>
+                  <input
+                    className={
+                      errors.senha
+                        ? 'outline-1 outline-red-500'
+                        : 'outline-none'
+                    }
+                    type={mostrar ? 'text' : 'password'}
+                    id='idSenha'
+                    {...register('senha', {
+                      required: 'Campo obrigatório',
+                      pattern: {
+                        value:
+                          /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).+$/,
+                        message:
+                          'Precisa ter pelo menos um número, uma letra maiúscula, uma letra minúscula, um número e um símbolo'
+                      },
+                      minLength: {
+                        value: 6,
+                        message: 'Precisa de pelo menos 6 caracteres'
+                      }
+                    })}
+                  />
+                  <div
+                    onClick={() =>
+                      mostrar ? setMostrar(false) : setMostrar(true)
+                    }
+                    className='text-lg right-4 flex cursor-pointer w-fit'
+                  >
+                    <p className='text-sm'>Mostrar senhas</p>
+                    {mostrar ? <ImEye /> : <ImEyeBlocked />}
+                  </div>
+                </div>
+                <MensagemErro error={errors.senha} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idSenhaConfirmada'>
-                  Confirmar Senha{' '}
-                  <span className='text-red-500 font-bold'>*</span>
+                  Confirmar Senha  <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
-                  type='password'
-                  name='senhaConfirmado'
+                  className={
+                    errors.senhaConfirmada
+                      ? 'outline-1 outline-red-500'
+                      : 'outline-none'
+                  }
+                  type={mostrar ? 'text' : 'password'}
                   id='idSenhaConfirmada'
-                  required
-                  onChange={e => setSenhaConfirmada(e.target.value)}
+                  {...register('senhaConfirmada', {
+                    required: 'Campo obrigatório',
+                    validate: value => {
+                      return value === watchSenha || 'Senhas não estão iguais'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.senhaConfirmada} />
               </div>
             </div>
             <div className='gap-2 pl-[1vw] my-[2vh]'>
-              <input
-                type='checkbox'
-                name='acompanhante'
-                id='idAcompanhante'
-                onChange={e => setAcompanhante(e.target.checked)}
-              />
-              <label htmlFor='idAcompanhante'>
-                Tem um cuidador ou acompanhante?
-              </label>
+              <div>
+                <input
+                  type='checkbox'
+                  id='idAcompanhante'
+                  {...register('acompanhante')}
+                />
+                <label htmlFor='idAcompanhante'>
+                  Tem um cuidador ou acompanhante?
+                </label>
+              </div>
+              <MensagemErro error={errors.acompanhante} />
             </div>
             <div>
               <p className='mx-auto text-sm opacity-75'>
