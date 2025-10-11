@@ -18,7 +18,7 @@ import logoBP from '../../assets/images/logo_parceiro1.png'
 import logoUmane from '../../assets/images/logo_parceiro2.png'
 import logoSSSP from '../../assets/images/logo_parceiro3.png'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
-import { useAuth } from '../../context/useAuth'
+import { useAuth } from '../../context/AuthContext';
 
 function Home () {
   const [index, setIndex] = useState(0)

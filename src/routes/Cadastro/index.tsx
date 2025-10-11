@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import Titulo from '../../components/Titulo/Titulo'
 import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/useAuth'
+import { useAuth } from '../../context/AuthContext';
 const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES;
 
 function Cadastro () {

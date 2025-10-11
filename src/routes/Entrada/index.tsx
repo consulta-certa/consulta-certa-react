@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import Titulo from '../../components/Titulo/Titulo'
 import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/useAuth'
+import { useAuth } from '../../context/AuthContext';
 
 function Entrada () {
   const { paciente } = useAuth()

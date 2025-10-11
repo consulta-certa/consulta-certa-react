@@ -3,7 +3,7 @@ import Titulo from '../../components/Titulo/Titulo'
 import ItemLembrete from '../../components/ItemLembrete/ItemLembrete'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/useAuth'
+import { useAuth } from '../../context/AuthContext';
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 import { formatarData } from '../../utils/formatarData'
 import type { tipoConsulta } from '../../types/tipoConsulta'
