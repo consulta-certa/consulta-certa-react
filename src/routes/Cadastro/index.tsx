@@ -27,7 +27,6 @@ function Cadastro () {
     try {
       const response = await fetch(URL_PACIENTES)
       const dataPaciente = await response.json()
-      console.log(dataPaciente)
 
       const emailExiste = dataPaciente.some(
         (p: tipoPaciente) => p.email === data.email
@@ -49,17 +48,13 @@ function Cadastro () {
 
       if (!emailExiste && !telefoneExiste) {
         const dataPayload = {
-          // id: 'idgerado',
+          id: 'idgerado',
           nome: data.nome.trim(),
           telefone: data.telefone.replace(/\D/g, ''),
           email: data.email,
-          emailConfirmado: data.emailConfirmado,
           senha: data.senha,
-          senhaConfirmada: data.senhaConfirmada,
           acompanhante: data.acompanhante ? 'S' : 'N'
         }
-
-        console.log(dataPayload)
 
         await fetch(URL_PACIENTES, {
           method: 'POST',
@@ -152,7 +147,8 @@ function Cadastro () {
               </div>
               <div className='input-container'>
                 <label htmlFor='idEmailConfirmado'>
-                  Confirmar email  <span className='text-red-500 font-bold'>*</span>
+                  Confirmar email{' '}
+                  <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
                   className={
@@ -174,9 +170,12 @@ function Cadastro () {
             </div>
             <div>
               <div className='input-container'>
-                <label htmlFor='id
-                Senha'>Senha <span className='text-red-500 font-bold'>*</span>
-              </label>
+                <label
+                  htmlFor='id
+                Senha'
+                >
+                  Senha <span className='text-red-500 font-bold'>*</span>
+                </label>
                 <div>
                   <input
                     className={
@@ -214,7 +213,8 @@ function Cadastro () {
               </div>
               <div className='input-container'>
                 <label htmlFor='idSenhaConfirmada'>
-                  Confirmar Senha  <span className='text-red-500 font-bold'>*</span>
+                  Confirmar Senha{' '}
+                  <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
                   className={
