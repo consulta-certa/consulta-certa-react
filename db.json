@@ -15,7 +15,21 @@
       "data_avaliacao": "2025-10-07T22:17:20.639Z"
     }
   ],
-  "consultas": [],
+  "consultas": [
+    {
+      "id": "848b",
+      "especialidade": "cardiologista",
+      "data_consulta": "09/10/2025 09:30",
+      "status": "I",
+      "id_paciente": "13dc"
+    },{
+      "id": "929e",
+      "especialidade": "cardiologista",
+      "data_consulta": "16/10/2025 10:50",
+      "status": "A",
+      "id_paciente": "13dc"
+    }
+  ],
   "contatos": [
     {
       "id": "da8b",
