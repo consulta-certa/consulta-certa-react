@@ -6,6 +6,7 @@ import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import type { tipoAvaliacao } from '../../types/tipoAvaliacao'
 import MensagemErro from '../../components/MensagemErro/MensagemErro'
+import { formatarData } from '../../utils/formatarData'
 const URL_AVALIACOES = import.meta.env.VITE_API_BASE_AVALIACOES
 
 function Avaliacoes () {
@@ -19,54 +20,6 @@ function Avaliacoes () {
     handleSubmit,
     formState: { errors }
   } = useForm<tipoAvaliacao>()
-  /*
-    const [dataSelecionada, setDataSelecionada] = useState('')
-    const [especialidade, setEspecialidade] = useState('')
-    const [nota, setNota] = useState(1)
-    const [comentario, setComentario] = useState('')
-    const [erro, setErro] = useState('')
-    const navigate = useNavigate()
-  
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      setErro('')
-  
-      const data = new Date(dataSelecionada)
-      const hoje = new Date()
-      const limite = new Date()
-      limite.setDate(hoje.getDate() - 14)
-  
-      if (data < limite) {
-        setErro('Avaliação expirada. Selecione uma data válida.')
-        return
-      }
-  
-      if (data > hoje) {
-        setErro('Data inválida. É preciso fazer a teleconsulta antes de avaliar.')
-        return
-      }
-  
-      try {
-        const avaliacaoPayload = {
-          nota,
-          comentario,
-          data_valiacao: formatarData(dataSelecionada)
-        }
-  
-        const response = await fetch(`${URL_AVALIACOES}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(avaliacaoPayload)
-        })
-  
-        if (!response.ok) throw new Error('Erro ao registrar avaliação.')
-  
-        setEnviado(true)
-      } catch {
-        setErro('Erro ao enviar avaliação. Tente novamente.')
-      }
-    }
-  */
 
   const onSubmit: SubmitHandler<tipoAvaliacao> = async data => {
     const avaliacao = {
@@ -74,7 +27,7 @@ function Avaliacoes () {
       especialidade: data.especialidade,
       nota: data.nota,
       comentario: data.comentario,
-      data_avaliacao: new Date()
+      data_avaliacao: formatarData(new Date().toISOString())
     }
 
     try {

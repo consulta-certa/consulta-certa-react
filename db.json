@@ -13,6 +13,13 @@
       "nota": "5",
       "comentario": "",
       "data_avaliacao": "2025-10-07T22:17:20.639Z"
+    },
+    {
+      "id": "371c",
+      "especialidade": "cardiologista",
+      "nota": "4",
+      "comentario": "",
+      "data_avaliacao": "2025-10-12T01:13:47.734Z"
     }
   ],
   "consultas": [
@@ -22,7 +29,8 @@
       "data_consulta": "09/10/2025 09:30",
       "status": "I",
       "id_paciente": "13dc"
-    },{
+    },
+    {
       "id": "929e",
       "especialidade": "cardiologista",
       "data_consulta": "16/10/2025 10:50",
