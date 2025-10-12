@@ -8,18 +8,11 @@
   "acompanhantes": [],
   "avaliacoes": [
     {
-      "id": "470a",
-      "especialidade": "optometrista",
+      "id": "70e6",
+      "especialidade": "fisioterapeuta",
       "nota": "5",
       "comentario": "",
-      "data_avaliacao": "2025-10-07T22:17:20.639Z"
-    },
-    {
-      "id": "371c",
-      "especialidade": "cardiologista",
-      "nota": "4",
-      "comentario": "",
-      "data_avaliacao": "2025-10-12T01:13:47.734Z"
+      "data_avaliacao": "11/10/2025 22:16"
     }
   ],
   "consultas": [

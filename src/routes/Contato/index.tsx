@@ -6,18 +6,27 @@ import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from 'react-icons/fa'
 import { useEffect, useState } from 'react'
 import type { tipoContato } from '../../types/tipoContato'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
-const URL_CONTATOS = import.meta.env.VITE_API_BASE_CONTATOS;
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import type { tipoMensagem } from '../../types/tipoMensagem'
+import MensagemErro from '../../components/MensagemErro/MensagemErro'
+import { useAuth } from '../../context/AuthContext'
+const URL_CONTATOS = import.meta.env.VITE_API_BASE_CONTATOS
+// const URL_API_EMAIL = import.meta.env.VITE_API_ENVIAR_EMAI
 
-function Contato() {
-  const [email, setEmail] = useState('')
-  const [nome, setNome] = useState('')
-  const [assunto, setAssunto] = useState('')
-  const [conteudo, setConteudo] = useState('')
+function Contato () {
+  const { paciente } = useAuth()
   const [enviado, setEnviado] = useState(false)
-  const [erro, setErro] = useState('')
-
   const [contatos, setContatos] = useState<tipoContato[]>([])
   const [indiceAtual, setIndiceAtual] = useState(0)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch
+  } = useForm<tipoMensagem>()
 
   useEffect(() => {
     const buscarContatos = async () => {
@@ -33,35 +42,20 @@ function Contato() {
     buscarContatos()
   }, [])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setErro('')
-    setNome('')
-    setEmail('')
-    setAssunto('')
-    setConteudo('')
-
-    if (!nome.trim() || nome.length < 2) {
-      setErro('Nome inválido.')
-      return
+  const onSubmit: SubmitHandler<tipoMensagem> = async data => {
+    /*
+    // Simulação para envio de emails ao HC
+    try {
+      await fetch(URL_API_EMAIL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+    } catch {
+      console.error('Erro ao enviar email')
     }
-
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErro('Email inválido.')
-      return
-    }
-
-    // Simulação apenas, para não enviar emails dispersos para o HC
-    const mensagem = {
-      nome: nome,
-      email: email,
-      assunto: assunto,
-      conteudo: conteudo
-    }
-
-    console.log(mensagem)
-    //
-
+    */
+    console.log(data)
     setEnviado(true)
   }
 
@@ -70,8 +64,7 @@ function Contato() {
       <Titulo titulo='Contato' />
       <div className='flex max-md:flex-col gap-[5vw] max-md:gap-[2vh] justify-center items-center w-full'>
         <section className='form'>
-          {erro && <p className='form-erro'>{erro}</p>}
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <fieldset>
               <div className='input-container'>
                 <label htmlFor='idNome'>
@@ -80,10 +73,20 @@ function Contato() {
                 <input
                   type='text'
                   id='idNome'
-                  name='nome'
-                  value={nome}
-                  onChange={e => setNome(e.target.value)}
+                  {...register('nome', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[A-Za-zÀ-ÿ]+(?: [A-Za-zÀ-ÿ]+)*$/,
+                      message: 'Precisa ser apenas letras'
+                    },
+                    minLength: {
+                      value: 3,
+                      message: 'Precisa de pelo menos 3 letras'
+                    }
+                  })}
+                  value={watch('nome') ?? ""}
                 />
+                <MensagemErro error={errors.nome} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idEmail'>
@@ -92,10 +95,16 @@ function Contato() {
                 <input
                   type='email'
                   id='idEmail'
-                  name='email'
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  {...register('email', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: 'Email invalido'
+                    }
+                  })}
+                  value={watch('email') ?? ""}
                 />
+                <MensagemErro error={errors.email} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idAssunto'>
@@ -104,10 +113,19 @@ function Contato() {
                 <input
                   type='text'
                   id='idAssunto'
-                  name='assunto'
-                  value={assunto}
-                  onChange={e => setAssunto(e.target.value)}
+                  {...register('assunto', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[^\s][\p{L}\p{N}\p{P}\s]*[^\s]$/u,
+                      message: 'Formatação inválida'
+                    },
+                    minLength: {
+                      value: 10,
+                      message: 'Precisa de pelo menos 10 caracteres'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.assunto} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idConteudo'>
@@ -116,14 +134,53 @@ function Contato() {
                 </label>
                 <textarea
                   id='idConteudo'
-                  name='conteudo'
-                  value={conteudo}
                   rows={2}
-                  onChange={e => setConteudo(e.target.value)}
+                  {...register('conteudo', {
+                    required: 'Campo obrigatório',
+                    minLength: {
+                      value: 30,
+                      message: 'Precisa de pelo menos 30 caracteres'
+                    }
+                  })}
                 ></textarea>
+                <MensagemErro error={errors.conteudo} />
+              </div>
+              <div className='input-container'>
+                <label htmlFor='idDestinatario'>
+                  Para quem enviar?{' '}
+                  <span className='text-red-500 font-bold'>*</span>
+                </label>
+                <select
+                  id='idDestinatario'
+                  defaultValue=''
+                  {...register('destinatario', {
+                    required: 'Campo obrigatório'
+                  })}
+                >
+                  <option value='' disabled>
+                    Selecione uma opção
+                  </option>
+                  {contatos.map((contato, index) => (
+                    <option key={index} value={contato.email}>
+                      {contato.nome}
+                    </option>
+                  ))}
+                </select>
+                <MensagemErro error={errors.destinatario} />
               </div>
             </fieldset>
-            <button type='submit'>Enviar</button>
+            <div className='flex gap-2'>
+              <button type='submit'>Enviar</button>
+              <button
+                type='reset'
+                onClick={() => {
+                  setValue('nome', paciente?.nome ?? 'Nome')
+                  setValue('email', paciente?.email ?? 'e@mail.com')
+                }}
+              >
+                Usar dados do login
+              </button>
+            </div>
           </form>
         </section>
         <section className='w-[50%] max-lg:w-[100%] min-w-[280px]'>
@@ -146,9 +203,10 @@ function Contato() {
                         setIndiceAtual(prev => (prev + 1) % contatos.length)
                       }
                       className={`flex items-center rounded-4xl gap-2 p-2 sm:py-1 text-white text-sm
-                        ${contatos.length > 1 ?
-                          'bg-cc-azul hover:scale-105 hover:bg-cc-azul-escuro' :
-                          'bg-cc-cinza-escuro hover:scale-100 hover:bg-cc-cinza-escuro'
+                        ${
+                          contatos.length > 1
+                            ? 'bg-cc-azul hover:scale-105 hover:bg-cc-azul-escuro'
+                            : 'bg-cc-cinza-escuro hover:scale-100 hover:bg-cc-cinza-escuro'
                         }
                       `}
                     >
@@ -159,14 +217,16 @@ function Contato() {
                   <li>
                     <button
                       onClick={() =>
-                        setIndiceAtual(prev => (prev - 1 + contatos.length) % contatos.length)
+                        setIndiceAtual(
+                          prev => (prev - 1 + contatos.length) % contatos.length
+                        )
                       }
                       className={`flex items-center rounded-4xl gap-2 p-2 sm:py-1 text-white text-sm
-                        ${contatos.length > 1 ?
-                          'bg-cc-azul hover:scale-105 hover:bg-cc-azul-escuro' :
-                          'bg-cc-cinza-escuro hover:scale-100 hover:bg-cc-cinza-escuro'
-                        }`
-                      }
+                        ${
+                          contatos.length > 1
+                            ? 'bg-cc-azul hover:scale-105 hover:bg-cc-azul-escuro'
+                            : 'bg-cc-cinza-escuro hover:scale-100 hover:bg-cc-cinza-escuro'
+                        }`}
                     >
                       <FaArrowAltCircleRight />
                       <p className='inline max-sm:hidden'>Avançar</p>
@@ -194,7 +254,14 @@ function Contato() {
                   <h3 className='text-lg font-semibold'>Endereço</h3>
                 </div>
                 <p>
-                  {`Rua ${contatos[indiceAtual].rua}, ${contatos[indiceAtual].numero} • ${contatos[indiceAtual].bairro}. ${contatos[indiceAtual].cidade} - SP. ${contatos[indiceAtual].cep.replace(/^(\d{5})(\d{3})$/, '$1-$2')}`}
+                  {`Rua ${contatos[indiceAtual].rua}, ${
+                    contatos[indiceAtual].numero
+                  } • ${contatos[indiceAtual].bairro}. ${
+                    contatos[indiceAtual].cidade
+                  } - SP. ${contatos[indiceAtual].cep.replace(
+                    /^(\d{5})(\d{3})$/,
+                    '$1-$2'
+                  )}`}
                 </p>
               </li>
             </ul>
@@ -203,7 +270,10 @@ function Contato() {
       </div>
 
       <ModalConfirmar
-        operacao={() => setEnviado(false)}
+        operacao={() => {
+          setEnviado(false)
+          reset()
+        }}
         mensagem='Dúvida enviada ao HC!'
         descricao='Acompanhe seu email para continuar a conversa por lá.'
         confirmacao={enviado}
