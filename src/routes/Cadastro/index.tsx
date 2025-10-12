@@ -48,7 +48,7 @@ function Cadastro () {
 
       if (!emailExiste && !telefoneExiste) {
         const dataPayload = {
-          id: 'idgerado',
+          // id: 'idgerado',
           nome: data.nome.trim(),
           telefone: data.telefone.replace(/\D/g, ''),
           email: data.email,
@@ -56,13 +56,14 @@ function Cadastro () {
           acompanhante: data.acompanhante ? 'S' : 'N'
         }
 
-        await fetch(URL_PACIENTES, {
+        const pacResponse = await fetch(URL_PACIENTES, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dataPayload)
         })
 
-        login(data)
+        const pacRegistro = await pacResponse.json()
+        login(pacRegistro)
       }
     } catch {
       console.error('Erro ao acessar servidor')
