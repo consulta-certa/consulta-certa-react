@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import Titulo from '../../components/Titulo/Titulo'
 import Linha from '../../components/Linha/Linha'
@@ -8,103 +7,94 @@ import { FaSquarePhone } from 'react-icons/fa6'
 import { IoMdClose, IoMdExit, IoMdMail } from 'react-icons/io'
 import { RiParentFill } from 'react-icons/ri'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import type { tipoAcompanhante } from '../../types/tipoAcompanhante';
+import MensagemErro from '../../components/MensagemErro/MensagemErro';
 const URL_ACOMPANHANTES = import.meta.env.VITE_API_BASE_ACOMPANHANTES
 
-function Perfil () {
+function Perfil() {
   const { paciente, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/entrar', { replace: true })
-  }
-
-  useEffect(() => {
-    if (!paciente) {
-      navigate('/cadastrar', { replace: true })
-    }
-  }, [navigate, paciente])
-
-  const [nome, setNome] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [email, setEmail] = useState('')
-  const [emailConfirmado, setEmailConfirmado] = useState('')
-  const [parentesco, setParentesco] = useState('')
-  const [erro, setErro] = useState('')
   const [aberto, setAberto] = useState(false)
   const [enviado, setEnviado] = useState(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    watch,
+    reset
+  } = useForm<tipoAcompanhante>()
 
-    if (!nome.trim() || nome.length < 2) {
-      setErro('Nome inválido.')
-      return
-    }
+  const watchEmail = watch('email')
 
-    if (!telefone.trim() || !/^\d{10,11}$/.test(telefone.replace(/\D/g, ''))) {
-      setErro('Telefone inválido. Exemplo de telefone correto: 11999999999).')
-      return
-    }
+  const fechar = () => {
+    reset()
+    setAberto(false)
+  }
 
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErro('Email inválido.')
-      return
-    }
-
-    if (email !== emailConfirmado) {
-      setErro('Os emails precisam ser iguais.')
-      return
-    }
-
-    if (!parentesco.trim() || parentesco.length < 2) {
-      setErro('Parentesco inválido.')
-      return
-    }
-
-    const idPaciente = paciente?.id
-
+  const onSubmit: SubmitHandler<tipoAcompanhante> = async data => {
     try {
-      const res = await fetch(`${URL_ACOMPANHANTES}?id_paciente=${idPaciente}`)
-      if (!res.ok)
-        throw new Error('Erro ao verificar acompanhantes existentes.')
+      const responseAcompanhante = await fetch(`${URL_ACOMPANHANTES}?id_paciente=${paciente?.id}`)
+      if (!responseAcompanhante.ok) throw new Error('Erro ao verificar acompanhantes existentes.')
 
-      const data = await res.json()
+      const acompanhantes = await responseAcompanhante.json()
 
-      const duplicado = data.some(
-        (a: { email: string; telefone: string }) =>
-          a.email === email && a.telefone === telefone
+      const emailExistente = acompanhantes.some(
+        (a: tipoAcompanhante) => a.email === data.email
       )
 
-      if (duplicado) {
-        setErro('Acompanhante já cadastrado.')
+      const emailIndevido = paciente?.email === data.email
+
+      const telefoneExistente = acompanhantes.some(
+        (a: tipoAcompanhante) => a.telefone == data.telefone
+      )
+
+      const telfoneIndevido = paciente?.telefone === data.telefone
+
+      if (emailExistente) {
+        setError('email', { type: 'manual', message: 'Acompanhante já cadastrado com esse email' })
         return
       }
 
-      const acompanhante = { nome, telefone, email, parentesco, idPaciente }
+      if (emailIndevido) {
+        setError('email', { type: 'manual', message: 'Você já foi cadastrado com esse email' })
+        return
+      }
+
+      if (telefoneExistente) {
+        setError('telefone', { type: 'manual', message: 'Acompanhante já cadastrado com esse telefone' })
+        return
+      }
+
+      if (telfoneIndevido) {
+        setError('telefone', { type: 'manual', message: 'Você já foi cadastrado com esse telefone' })
+        return
+      }
+
+      const acompanhanteRegistrado = {
+        nome: data.nome,
+        telefone: data.telefone,
+        email: data.email,
+        parentesco: data.parentesco,
+        idPaciente: paciente?.id
+      }
 
       const response = await fetch(`${URL_ACOMPANHANTES}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(acompanhante)
+        body: JSON.stringify(acompanhanteRegistrado)
       })
 
-      if (!response.ok) throw new Error('Erro ao salvar o acompanhante')
-      limpar()
+      console.log(paciente?.telefone)
+      console.log(data.telefone)
+      fechar()
       setEnviado(true)
-    } catch {
-      setErro('Erro ao enviar os dados. Tente novamente mais tarde.')
-    }
-  }
+      if (!response.ok) throw new Error('Erro ao salvar o acompanhante')
 
-  const limpar = () => {
-    setAberto(false)
-    setErro('')
-    setNome('')
-    setTelefone('')
-    setEmail('')
-    setEmailConfirmado('')
-    setParentesco('')
+    } catch {
+      console.error("Erro ao acessar servidor")
+    }
   }
 
   return (
@@ -145,7 +135,7 @@ function Perfil () {
                 )}
             </li>
           </ul>
-          <button className='botao' onClick={handleLogout}>
+          <button className='botao' onClick={() => logout()}>
             <IoMdExit className='-ml-4' />
             <p>Sair</p>
           </button>
@@ -162,18 +152,15 @@ function Perfil () {
       )}
 
       <section
-        className={`form fixed shadow-2xl max-sm:-mt-[10vh] transition-transform duration-300 ease-in ${
-          aberto ? 'translate-y-0' : 'translate-y-[150vh]'
-        } `}
+        className={`form fixed shadow-2xl max-sm:-mt-[10vh] transition-transform duration-300 ease-in ${aberto ? 'translate-y-0' : 'translate-y-[150vh]'}`}
       >
         <div
           className='w-fit rounded-full p-2 bg-cc-azul text-white text-xl absolute right-2 top-2 hover:scale-105 hover:bg-cc-azul-escuro cursor-pointer transition-all duration-300 ease-in'
-          onClick={() => limpar()}
+          onClick={() => fechar()}
         >
           <IoMdClose />
         </div>
-        {erro && <p className='form-erro'>{erro}</p>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <fieldset>
             <div>
               <div className='input-container'>
@@ -181,26 +168,47 @@ function Perfil () {
                   Nome <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.nome ? 'outline-1 outline-red-500' : 'outline-none'
+                  }
                   type='text'
-                  name='nome'
                   id='idNome'
-                  value={nome}
-                  required
-                  onChange={e => setNome(e.target.value)}
+                  {...register('nome', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[A-Za-zÀ-ÿ]+(?: [A-Za-zÀ-ÿ]+)*$/,
+                      message: 'Precisa ser apenas letras'
+                    },
+                    minLength: {
+                      value: 3,
+                      message: 'Precisa de pelo menos 3 letras'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.nome} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idTelefone'>
                   Telefone <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.telefone
+                      ? 'outline-1 outline-red-500'
+                      : 'outline-none'
+                  }
                   type='tel'
-                  name='telefone'
                   id='idTelefone'
-                  value={telefone}
-                  required
-                  onChange={e => setTelefone(e.target.value)}
+                  {...register('telefone', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value:
+                        /^\(?[1-9]{2}\)?[\s-]?(?:9[0-9]{4}|[2-5][0-9]{3})[\s-]?[0-9]{4}$/,
+                      message: 'Telefone inválido'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.telefone} />
               </div>
             </div>
             <div>
@@ -209,13 +217,20 @@ function Perfil () {
                   Email <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.email ? 'outline-1 outline-red-500' : 'outline-none'
+                  }
                   type='email'
-                  name='email'
                   id='idEmail'
-                  value={email}
-                  required
-                  onChange={e => setEmail(e.target.value)}
+                  {...register('email', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: 'Email inválido'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.email} />
               </div>
               <div className='input-container'>
                 <label htmlFor='idEmailConfirmado'>
@@ -223,27 +238,43 @@ function Perfil () {
                   <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.emailConfirmado
+                      ? 'outline-1 outline-red-500'
+                      : 'outline-none'
+                  }
                   type='email'
-                  name='emailConfirmado'
                   id='idEmailConfirmado'
-                  value={emailConfirmado}
-                  required
-                  onChange={e => setEmailConfirmado(e.target.value)}
+                  {...register('emailConfirmado', {
+                    required: 'Campo obrigatório',
+                    validate: value => {
+                      return value === watchEmail || 'Emails não estão iguais'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.emailConfirmado} />
               </div>
             </div>
             <div className='input-container'>
               <label htmlFor='idParentesco'>
                 Parentesco <span className='text-red-500 font-bold'>*</span>
               </label>
-              <input
-                type='text'
-                name='parentesco'
-                id='idParentesco'
-                value={parentesco}
-                required
-                onChange={e => setParentesco(e.target.value)}
-              />
+              <select
+                id="idParentesco"
+                {...register('parentesco', { required: 'Campo obrigatório' })}
+                defaultValue=''
+              >
+                <option value="" disabled>Selecione uma opção</option>
+                <option value="filho/a">Filho/a</option>
+                <option value="cuidador/a">Cuidador/a</option>
+                <option value="neto/a">Neto/a</option>
+                <option value="amigo/a">Amigo/a</option>
+                <option value="conjuge">Cônjuge (marido/esposa, namorado/a )</option>
+                <option value="segundo_grau">Parentes de 2º Grau (pesquisar)</option>
+                <option value="terceiro_grau">Parentes de 2º Grau (pesquisar)</option>
+                <option value="outro">Outro</option>
+              </select>
+              <MensagemErro error={errors.parentesco} />
             </div>
           </fieldset>
           <button type='submit'>Registrar</button>

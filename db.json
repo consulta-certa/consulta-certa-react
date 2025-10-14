@@ -5,7 +5,16 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "acompanhantes": [],
+  "acompanhantes": [
+    {
+      "id": "8ab1",
+      "nome": "Acomp",
+      "telefone": "1132345678",
+      "email": "b@a.com",
+      "parentesco": "filho/a",
+      "idPaciente": "ceac"
+    }
+  ],
   "avaliacoes": [
     {
       "id": "70e6",
@@ -136,7 +145,7 @@
     {
       "id": "ceac",
       "nome": "aaaaa",
-      "telefone": "1112345678",
+      "telefone": "1122345678",
       "email": "a@b.com",
       "senha": "Aa@123",
       "acompanhante": "N"
