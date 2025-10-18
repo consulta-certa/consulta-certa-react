@@ -16,6 +16,7 @@ function Perfil() {
   const { paciente, logout } = useAuth()
   const [aberto, setAberto] = useState(false)
   const [enviado, setEnviado] = useState(false)
+  const [serverError, setServerError] = useState<boolean>(false)
 
   const {
     register,
@@ -93,7 +94,8 @@ function Perfil() {
       if (!response.ok) throw new Error('Erro ao salvar o acompanhante')
 
     } catch {
-      console.error("Erro ao acessar servidor")
+      console.error("Erro ao cadastrar acompanhante.")
+      serverError ? setServerError(true) : setServerError(true)
     }
   }
 
@@ -280,6 +282,13 @@ function Perfil() {
           <button type='submit'>Registrar</button>
         </form>
       </section>
+
+      <ModalConfirmar
+        operacao={() => setServerError(false)}
+        mensagem='Erro ao acessar servidor'
+        descricao='Aguarde um pouco e tente novamente.'
+        confirmacao={serverError}
+      />
     </main>
   )
 }

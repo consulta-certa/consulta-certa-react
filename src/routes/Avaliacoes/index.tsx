@@ -12,6 +12,7 @@ const URL_AVALIACOES = import.meta.env.VITE_API_BASE_AVALIACOES
 function Avaliacoes () {
   const [nota, setNota] = useState<number>(0)
   const [enviado, setEnviado] = useState<boolean>(false)
+  const [serverError, setServerError] = useState<boolean>(false)
 
   const navigate = useNavigate()
 
@@ -38,7 +39,8 @@ function Avaliacoes () {
       })
       setEnviado(true)
     } catch {
-      console.error('Erro ao enviar avaliação')
+      console.error('Erro ao enviar avaliação.')
+      serverError ? setServerError(true) : setServerError(true)
     }
   }
 
@@ -112,6 +114,13 @@ function Avaliacoes () {
         mensagem='Obrigado pela sua avaliação!'
         descricao='Clique em OK para voltar à página inicial.'
         confirmacao={enviado}
+      />
+
+      <ModalConfirmar
+        operacao={() => setServerError(false)}
+        mensagem='Erro ao acessar servidor'
+        descricao='Aguarde um pouco e tente novamente.'
+        confirmacao={serverError}
       />
     </main>
   )

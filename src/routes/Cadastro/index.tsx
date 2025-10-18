@@ -6,11 +6,13 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import type { tipoPaciente } from '../../types/tipoPaciente'
 import MensagemErro from '../../components/MensagemErro/MensagemErro'
 import { ImEye, ImEyeBlocked } from 'react-icons/im'
+import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
 function Cadastro () {
   const { login } = useAuth()
   const [mostrar, setMostrar] = useState<boolean>(false)
+  const [serverError, setServerError] = useState<boolean>(false)
 
   const {
     register,
@@ -66,7 +68,8 @@ function Cadastro () {
         login(pacRegistro)
       }
     } catch {
-      console.error('Erro ao acessar servidor')
+      console.error('Erro ao cadastrar paciente.')
+      serverError ? setServerError(true) : setServerError(true)
     }
   }
 
@@ -267,6 +270,13 @@ function Cadastro () {
           Entrar
         </Link>
       </p>
+
+      <ModalConfirmar
+        operacao={() => setServerError(false)}
+        mensagem='Erro ao acessar servidor'
+        descricao='Aguarde um pouco e tente novamente.'
+        confirmacao={serverError}
+      />
     </main>
   )
 }

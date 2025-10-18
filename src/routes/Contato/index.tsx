@@ -53,6 +53,7 @@ function Contato () {
       })
     } catch {
       console.error('Erro ao enviar email')
+      serverError ? setServerError(true) : setServerError(true)
     }
     */
     console.log(data)
@@ -84,7 +85,7 @@ function Contato () {
                       message: 'Precisa de pelo menos 3 letras'
                     }
                   })}
-                  value={watch('nome') ?? ""}
+                  value={watch('nome') ?? ''}
                 />
                 <MensagemErro error={errors.nome} />
               </div>
@@ -102,7 +103,7 @@ function Contato () {
                       message: 'Email invalido'
                     }
                   })}
-                  value={watch('email') ?? ""}
+                  value={watch('email') ?? ''}
                 />
                 <MensagemErro error={errors.email} />
               </div>
@@ -160,11 +161,15 @@ function Contato () {
                   <option value='' disabled>
                     Selecione uma opção
                   </option>
-                  {contatos.map((contato, index) => (
+                  { contatos.length > 0 ?
+                  
+                  contatos.map((contato, index) => (
                     <option key={index} value={contato.email}>
                       {contato.nome}
                     </option>
-                  ))}
+                  )):
+                  <option value="" disabled>Conteúdo indisponível, servidor fora do ar.</option>
+                  }
                 </select>
                 <MensagemErro error={errors.destinatario} />
               </div>
@@ -190,7 +195,7 @@ function Contato () {
             <p>Veja mais formas de falar com o HC.</p>
           </div>
 
-          {contatos[indiceAtual] && (
+          {contatos[indiceAtual] ? (
             <ul className='flex flex-col gap-[4vh] bg-cc-cinza p-4 rounded-2xl'>
               <li className='flex gap-2 items-center justify-between'>
                 <h3 className='text-xl font-bold -mb-[2vh]'>
@@ -265,6 +270,8 @@ function Contato () {
                 </p>
               </li>
             </ul>
+          ) : (
+            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
           )}
         </section>
       </div>
@@ -278,6 +285,13 @@ function Contato () {
         descricao='Acompanhe seu email para continuar a conversa por lá.'
         confirmacao={enviado}
       />
+
+      {/* <ModalConfirmar
+        operacao={() => setServerError(false)}
+        mensagem='Erro ao acessar servidor'
+        descricao='Aguarde um pouco e tente novamente.'
+        confirmacao={serverError}
+      /> */}
     </main>
   )
 }

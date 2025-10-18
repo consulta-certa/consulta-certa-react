@@ -16,7 +16,9 @@ function Lembretes () {
   const navigate = useNavigate()
   const { paciente } = useAuth()
   const [enviado, setEnviado] = useState(false)
+  const [serverError, setServerError] = useState<boolean>(false)
   const [listaLembretes, setListaLembretes] = useState<tipoConsulta[]>([])
+
   const {
     register,
     handleSubmit,
@@ -80,7 +82,8 @@ function Lembretes () {
 
       setEnviado(true)
     } catch {
-      console.error('Erro ao acessar servidor')
+      console.error('Erro ao registrar lembrete.')
+      serverError ? setServerError(true) : setServerError(true)
     }
   }
 
@@ -90,11 +93,9 @@ function Lembretes () {
       <div className='flex max-md:flex-col max-md:gap-[4vh] gap-[2vw] justify-center items-center w-full'>
         <section className='w-[50%] max-md:w-full'>
           <h2 className='titulo-2'>Seus lembretes</h2>
-          <ul className='flex flex-col-reverse gap-[2vh] w-full mt-[4vh] h-[40vh] pr-[2vw] overflow-y-scroll'>
-            {listaLembretes.length == 0 ? (
-              <li>Você ainda não registrou nenhum lembrete.</li>
-            ) : (
-              listaLembretes.map(lembrete => (
+          {listaLembretes.length > 0 ? (
+            <ul className='flex flex-col-reverse gap-[2vh] w-full mt-[4vh] h-[40vh] pr-[2vw] overflow-y-scroll'>
+              {listaLembretes.map(lembrete => (
                 <ItemLembrete
                   key={lembrete.id}
                   especialidade={lembrete.especialidade}
@@ -103,9 +104,11 @@ function Lembretes () {
                     .replace(' ', ' às ')}
                   status={lembrete.status}
                 />
-              ))
-            )}
-          </ul>
+              ))}
+            </ul>
+          ) : (
+            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
+          )}
         </section>
         <section className='w-[32%] max-md:w-full'>
           <h2 className='titulo-2'>Criar novo lembrete?</h2>
@@ -173,6 +176,13 @@ function Lembretes () {
         mensagem='Lembrete Registrado! Ele será enviado por email'
         descricao='Clique em OK para voltar à página inicial.'
         confirmacao={enviado}
+      />
+
+      <ModalConfirmar
+        operacao={() => setServerError(false)}
+        mensagem='Erro ao acessar servidor'
+        descricao='Aguarde um pouco e tente novamente.'
+        confirmacao={serverError}
       />
     </main>
   )
