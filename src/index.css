@@ -111,6 +111,10 @@
   .detalhes-laterais {
     @apply before:content-[""] before:w-[2vw] before:h-4/5 before:bg-cc-cinza-escuro before:rounded-l-xl before:absolute before:-left-[2vw] after:content-[""] after:w-[2vw] after:h-4/5 after:bg-cc-cinza-escuro after:rounded-r-xl after:absolute after:-right-[2vw];
   }
+
+  .server-error {
+    @apply p-4 bg-cc-cinza-escuro rounded-lg w-fit opacity-65 my-4
+  }
 }
 
 .texto-com-quebra {

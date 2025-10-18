@@ -1,45 +1,55 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Titulo from '../../components/Titulo/Titulo'
-import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import type { tipoPaciente } from '../../types/tipoPaciente'
+import MensagemErro from '../../components/MensagemErro/MensagemErro'
+import { ImEye, ImEyeBlocked } from 'react-icons/im'
+import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
+const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
 function Entrada () {
-  const { paciente } = useAuth()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (paciente) {
-      navigate('/', { replace: true })
-    }
-  }, [paciente, navigate])
-
   const { login } = useAuth()
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
-  const [erro, setErro] = useState('')
+  const [mostrar, setMostrar] = useState<boolean>(false)
+  const [serverError, setServerError] = useState<boolean>(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setErro('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError
+  } = useForm<tipoPaciente>()
 
+  const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
-      const response = await fetch(
-        `http://localhost:3001/pacientes?email=${email}`
+      const response = await fetch(URL_PACIENTES)
+      const dataPaciente = await response.json()
+
+      const emailExiste = dataPaciente.some(
+        (p: tipoPaciente) => p.email === data.email
       )
-      if (!response.ok) throw new Error()
+      const senhaIncorreta = dataPaciente.some(
+        (p: tipoPaciente) => p.senha != data.senha
+      )
 
-      const pacientes = await response.json()
-      const paciente = pacientes[0]
-
-      if (!paciente || paciente.senha !== senha) {
-        setErro('Email ou senha incorretos.')
-        return
+      if (!emailExiste) {
+        setError('email', { type: 'manual', message: 'Email não cadastrado' })
       }
 
-      login(paciente)
-      navigate('/lembretes', { replace: true })
+      if (senhaIncorreta) {
+        setError('senha', {
+          type: 'manual',
+          message: 'Senha incorreta'
+        })
+      }
+
+      if (emailExiste && !senhaIncorreta) {
+        login(dataPaciente.find((p: tipoPaciente) => p.email === data.email))
+      }
     } catch {
-      setErro('Erro ao verificar as credenciais.')
+      console.error('Erro ao fazer login.')
+      serverError ? setServerError(true) : setServerError(true)
     }
   }
 
@@ -47,8 +57,7 @@ function Entrada () {
     <main>
       <Titulo titulo='Entrar' />
       <section className='form'>
-        {erro && <p className='form-erro'>{erro}</p>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <fieldset>
             <div>
               <div className='input-container'>
@@ -56,24 +65,64 @@ function Entrada () {
                   Email <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <input
+                  className={
+                    errors.email ? 'outline-1 outline-red-500' : 'outline-none'
+                  }
                   type='email'
-                  name='email'
                   id='idEmail'
-                  onChange={e => setEmail(e.target.value)}
+                  {...register('email', {
+                    required: 'Campo obrigatório',
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: 'Email inválido'
+                    }
+                  })}
                 />
+                <MensagemErro error={errors.email} />
               </div>
             </div>
             <div>
               <div className='input-container'>
-                <label htmlFor='idSenha'>
+                <label
+                  htmlFor='id
+                Senha'
+                >
                   Senha <span className='text-red-500 font-bold'>*</span>
                 </label>
-                <input
-                  type='password'
-                  name='senha'
-                  id='idSenha'
-                  onChange={e => setSenha(e.target.value)}
-                />
+                <div>
+                  <input
+                    className={
+                      errors.senha
+                        ? 'outline-1 outline-red-500'
+                        : 'outline-none'
+                    }
+                    type={mostrar ? 'text' : 'password'}
+                    id='idSenha'
+                    {...register('senha', {
+                      required: 'Campo obrigatório',
+                      pattern: {
+                        value:
+                          /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).+$/,
+                        message:
+                          'Precisa ter pelo menos um número, uma letra maiúscula, uma letra minúscula, um número e um símbolo'
+                      },
+                      minLength: {
+                        value: 6,
+                        message: 'Precisa de pelo menos 6 caracteres'
+                      }
+                    })}
+                  />
+                  <div
+                    onClick={() =>
+                      mostrar ? setMostrar(false) : setMostrar(true)
+                    }
+                    className='text-lg right-4 flex cursor-pointer w-fit'
+                  >
+                    <p className='text-sm'>Mostrar senhas</p>
+                    {mostrar ? <ImEye /> : <ImEyeBlocked />}
+                  </div>
+                </div>
+                <MensagemErro error={errors.senha} />
               </div>
             </div>
           </fieldset>
@@ -86,6 +135,13 @@ function Entrada () {
           Cadastrar
         </Link>
       </p>
+
+      <ModalConfirmar
+        operacao={() => setServerError(false)}
+        mensagem='Erro ao acessar servidor'
+        descricao='Aguarde um pouco e tente novamente.'
+        confirmacao={serverError}
+      />
     </main>
   )
 }

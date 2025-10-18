@@ -4,7 +4,7 @@ import Linha from '../../components/Linha/Linha'
 import { useEffect, useState } from 'react'
 import ItemFaq from '../../components/ItemFaq/ItemFaq'
 import type { tipoConteudo } from '../../types/tipoConteudo'
-const URL_CONTEUDO = import.meta.env.VITE_API_BASE_CONTEUDOS;
+const URL_CONTEUDO = import.meta.env.VITE_API_BASE_CONTEUDOS
 
 function Ajuda () {
   const [faqs, setFaqs] = useState<tipoConteudo[]>([])
@@ -13,13 +13,12 @@ function Ajuda () {
   const fetchFaqs = async () => {
     try {
       const response = await fetch(`${URL_CONTEUDO}`)
-      const data = await response.json();
-      
-			const faqsSelecionadas = data.filter(
+      const data = await response.json()
+
+      const faqsSelecionadas = data.filter(
         (conteudo: tipoConteudo) => conteudo.tipo == 'f'
       )
       setFaqs(faqsSelecionadas)
-
     } catch {
       console.error('Erro ao buscar os dados de FAQ')
     }
@@ -49,18 +48,22 @@ function Ajuda () {
           </Link>
         </section>
         <section className='w-[50%] min-w-[280px] h-[60vh] pr-[1vw] overflow-y-scroll'>
-          <ul className='flex flex-col gap-4'>
-            {faqs.map((faq, index) => (
-              <ItemFaq
-                key={faq.id}
-                index={index}
-                duvida={faq.titulo}
-                resposta={faq.texto}
-                aberto={aberto}
-                onToggle={handleToggle}
-              />
-            ))}
-          </ul>
+          {faqs.length > 0 ? (
+            <ul className='flex flex-col gap-4'>
+              {faqs.map((faq, index) => (
+                <ItemFaq
+                  key={faq.id}
+                  index={index}
+                  duvida={faq.titulo}
+                  resposta={faq.texto}
+                  aberto={aberto}
+                  onToggle={handleToggle}
+                />
+              ))}
+            </ul>
+          ) : (
+            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
+          )}
         </section>
       </div>
     </main>

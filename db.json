@@ -5,17 +5,41 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "acompanhantes": [],
-  "avaliacoes": [
+  "acompanhantes": [
     {
-      "id": "470a",
-      "especialidade": "optometrista",
-      "nota": "5",
-      "comentario": "",
-      "data_avaliacao": "2025-10-07T22:17:20.639Z"
+      "id": "8ab1",
+      "nome": "Acomp",
+      "telefone": "1132345678",
+      "email": "b@a.com",
+      "parentesco": "filho/a",
+      "idPaciente": "ceac"
     }
   ],
-  "consultas": [],
+  "avaliacoes": [
+    {
+      "id": "70e6",
+      "especialidade": "fisioterapeuta",
+      "nota": "5",
+      "comentario": "",
+      "data_avaliacao": "11/10/2025 22:16"
+    }
+  ],
+  "consultas": [
+    {
+      "id": "848b",
+      "especialidade": "cardiologista",
+      "data_consulta": "09/10/2025 09:30",
+      "status": "I",
+      "id_paciente": "13dc"
+    },
+    {
+      "id": "929e",
+      "especialidade": "cardiologista",
+      "data_consulta": "16/10/2025 10:50",
+      "status": "A",
+      "id_paciente": "13dc"
+    }
+  ],
   "contatos": [
     {
       "id": "da8b",
@@ -117,5 +141,22 @@
     }
   ],
   "lembretes": [],
-  "pacientes": []
+  "pacientes": [
+    {
+      "id": "ceac",
+      "nome": "aaaaa",
+      "telefone": "1122345678",
+      "email": "a@b.com",
+      "senha": "Aa@123",
+      "acompanhante": "N"
+    },
+    {
+      "id": "13dc",
+      "nome": "Nome",
+      "telefone": "11912345678",
+      "email": "a@mail.com",
+      "senha": "Aa@123",
+      "acompanhante": "S"
+    }
+  ]
 }
