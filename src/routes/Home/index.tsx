@@ -133,12 +133,12 @@ function Home () {
             label='Como será sua consulta'
           />
           <HomeButton
-            path='/'
+            path='/informacao'
             icon={FaUserDoctor}
             label='Profissionais da saúde'
           />
           <HomeButton
-            path='/'
+            path='/informacao'
             icon={MdMedicalInformation}
             label='Cuidados pós consulta'
           />

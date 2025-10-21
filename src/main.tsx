@@ -18,6 +18,7 @@ import Cadastro from './routes/Cadastro'
 import Entrada from './routes/Entrada'
 import { AuthProvider } from './context/AuthContext'
 import AuthRoute from './context/AuthRoute'
+import Informacoes from './routes/Informacoes'
 
 const router = createBrowserRouter([
   {
@@ -64,7 +65,9 @@ const router = createBrowserRouter([
         )
       },
       { path: '/quem-somos', element: <QuemSomos /> },
-      { path: '/termos', element: <Termos /> }
+      { path: '/termos', element: <Termos /> },
+      { path: '/informacao', element: <Informacoes /> },
+      { path: '/informacao/:id', element: <Termos /> }
     ]
   }
 ])
