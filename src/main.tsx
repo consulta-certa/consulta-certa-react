@@ -19,6 +19,7 @@ import Entrada from './routes/Entrada'
 import { AuthProvider } from './context/AuthContext'
 import AuthRoute from './context/AuthRoute'
 import Informacoes from './routes/Informacoes'
+import Informacao from './routes/Informacao'
 
 const router = createBrowserRouter([
   {
@@ -67,7 +68,7 @@ const router = createBrowserRouter([
       { path: '/quem-somos', element: <QuemSomos /> },
       { path: '/termos', element: <Termos /> },
       { path: '/informacao', element: <Informacoes /> },
-      { path: '/informacao/:id', element: <Termos /> }
+      { path: '/informacao/:name', element: <Informacao /> }
     ]
   }
 ])

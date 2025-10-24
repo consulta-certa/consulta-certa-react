@@ -5,7 +5,7 @@ import NavElement from './NavElement'
 
 import { AiFillHome } from 'react-icons/ai'
 import { BiSolidBookReader } from 'react-icons/bi'
-import { MdLiveHelp } from 'react-icons/md'
+import { MdChromeReaderMode, MdLiveHelp } from 'react-icons/md'
 import { RiTeamFill } from 'react-icons/ri'
 import { IoMdChatboxes } from 'react-icons/io'
 import { MdRateReview } from 'react-icons/md'
@@ -36,6 +36,7 @@ function Header () {
           <NavElement path='/' icon={AiFillHome} label='Início' />
           <NavElement path='/guias' icon={BiSolidBookReader} label='Guias' />
           <NavElement path='/ajuda' icon={MdLiveHelp} label='Ajuda' />
+          <NavElement path='/informacao' icon={MdChromeReaderMode} label='Info' />
           <NavElement path='/quem-somos' icon={RiTeamFill} label='Quem somos' />
           <NavElement path='/contato' icon={IoMdChatboxes} label='Contato' />
           <NavElement path='/avaliar-teleconsulta' icon={MdRateReview} label='Avaliações'
@@ -57,6 +58,7 @@ function Header () {
       </nav>
       <nav className={`hidden max-lg:block fixed bottom-[14vh] p-4 z-1000 text-lg transition-transform duration-300 ease-in rounded-xl shadow-lg ${aberto ? 'translate-y-0' : 'translate-y-[150vh]'}`} onClick={()=>setAberto(aberto ? false : true)}>
         <ul className='flex flex-col w-full items-center h-full gap-4 '>
+          <NavElement path='/informacao' icon={MdChromeReaderMode} label='Info' />
           <NavElement path='/quem-somos' icon={RiTeamFill} label='Quem somos'/>
           <NavElement path='/contato' icon={IoMdChatboxes} label='Contato'/>
           <NavElement path='/avaliar-teleconsulta' icon={MdRateReview} label='Avaliar'/>

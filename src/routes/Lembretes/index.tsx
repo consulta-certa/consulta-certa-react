@@ -107,7 +107,9 @@ function Lembretes () {
               ))}
             </ul>
           ) : (
-            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
+            serverError ?
+            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p> :
+            <p>Você ainda não registrou nenhum lembrete.</p>
           )}
         </section>
         <section className='w-[32%] max-md:w-full'>
