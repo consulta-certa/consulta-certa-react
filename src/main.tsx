@@ -18,7 +18,7 @@ import Cadastro from './routes/Cadastro'
 import Entrada from './routes/Entrada'
 import { AuthProvider } from './context/AuthContext'
 import AuthRoute from './context/AuthRoute'
-import TesteEquipamentos from './routes/TesteEquipamentos'
+import VerificadorDeEquipamento from './routes/TesteEquipamentos'
 
 const router = createBrowserRouter([
   {
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
         )
       },
       { path: '/guias/guia/:name', element: <Guia /> },
-      { path: '/TesteEquipamentos', element: <TesteEquipamentos /> },
+      { path: '/TesteEquipamentos', element: <VerificadorDeEquipamento/> },
       { path: '/', element: <Home /> },
       {
         path: '/lembretes',
