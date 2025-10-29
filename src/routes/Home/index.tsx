@@ -152,6 +152,11 @@ function Home () {
             icon={BsFillPinMapFill}
             label='UBS perto de mim'
           />
+          <HomeButton
+            path='/TesteEquipamentos'
+            icon={BsFillPinMapFill}
+            label='Teste Seus Equipamentos'
+          />
         </ul>
       </section>
 
