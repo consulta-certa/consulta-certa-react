@@ -23,33 +23,41 @@ function Entrada () {
 
   const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
-      const response = await fetch(URL_PACIENTES)
-      const dataPaciente = await response.json()
-
-      const emailExiste = dataPaciente.some(
-        (p: tipoPaciente) => p.email === data.email
-      )
-      const senhaIncorreta = dataPaciente.some(
-        (p: tipoPaciente) => p.senha != data.senha
-      )
-
-      if (!emailExiste) {
-        setError('email', { type: 'manual', message: 'Email não cadastrado' })
+      const jsonPayload = {
+        email: data.email,
+        senha: data.senha
       }
 
-      if (senhaIncorreta) {
-        setError('senha', {
-          type: 'manual',
-          message: 'Senha incorreta'
-        })
+      const response = await fetch(`${URL_PACIENTES}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonPayload)
+      })
+
+      if (!response.ok) {
+        if (response.status == 404) {
+          setError('email', { type: 'manual', message: 'Email não cadastrado' })
+        }
+
+        if (response.status == 401) {
+          setError('senha', { type: 'manual', message: 'Senha incorreta' })
+        }
+
+        if (response.status == 500) {
+          serverError ? setServerError(true) : setServerError(true)
+        }
+
+        return
       }
 
-      if (emailExiste && !senhaIncorreta) {
-        login(dataPaciente.find((p: tipoPaciente) => p.email === data.email))
+      const { token } = await response.json()
+      console.log(token)
+      login(token)
+
+    } catch (error) {
+      if (error instanceof Error) {
+        serverError ? setServerError(true) : setServerError(true)
       }
-    } catch {
-      console.error('Erro ao fazer login.')
-      serverError ? setServerError(true) : setServerError(true)
     }
   }
 

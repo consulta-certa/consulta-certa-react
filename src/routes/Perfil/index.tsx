@@ -36,10 +36,8 @@ function Perfil() {
 
   const onSubmit: SubmitHandler<tipoAcompanhante> = async data => {
     try {
-      const responseAcompanhante = await fetch(`${URL_ACOMPANHANTES}?id_paciente=${paciente?.id}`)
-      if (!responseAcompanhante.ok) throw new Error('Erro ao verificar acompanhantes existentes.')
-
-      const acompanhantes = await responseAcompanhante.json()
+      const responseAcompanhante = await fetch(URL_ACOMPANHANTES)
+      const acompanhantes:tipoAcompanhante[] = await responseAcompanhante.json()
 
       const emailExistente = acompanhantes.some(
         (a: tipoAcompanhante) => a.email === data.email
@@ -73,18 +71,16 @@ function Perfil() {
         return
       }
 
-      const acompanhanteRegistrado = {
-        nome: data.nome,
-        telefone: data.telefone,
-        email: data.email,
-        parentesco: data.parentesco,
-        idPaciente: paciente?.id
-      }
-
       const response = await fetch(`${URL_ACOMPANHANTES}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(acompanhanteRegistrado)
+        body: JSON.stringify({
+          nome: data.nome,
+          telefone: data.telefone,
+          email: data.email,
+          parentesco: data.parentesco,
+          idPaciente: paciente?.sub
+        })
       })
 
       console.log(paciente?.telefone)

@@ -232,7 +232,7 @@ function Home () {
       </section>
 
       {
-        paciente?.acompanhante ?
+        paciente?.acompanhantes == 's'?
         <ModalConfirmar operacao={() => setConfirmado(false)} mensagem='Cadastre seu acompanhante!' descricao='Não se esqueça de acessar o perfil e registrar as informações do acompanhante.' confirmacao={confirmado}/> : ''
       }
     </main>

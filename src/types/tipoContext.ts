@@ -1,7 +1,7 @@
-import type { tipoPaciente } from "./tipoPaciente";
+import type { tipoTokenPayload } from "./tipoPaciente";
 
 export type tipoContext = {
-    paciente: tipoPaciente | null;
-    login: (paciente: tipoPaciente) => void;
+    paciente: tipoTokenPayload | null;
+    login: (paciente: string) => void;
     logout: () => void;
 }

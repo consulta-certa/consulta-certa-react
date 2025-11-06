@@ -28,17 +28,18 @@ function Cadastro () {
   const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
       const response = await fetch(URL_PACIENTES)
-      const dataPaciente = await response.json()
+      const pacientes: tipoPaciente[] = await response.json()
 
-      const emailExiste = dataPaciente.some(
-        (p: tipoPaciente) => p.email === data.email
+      const emailExiste = pacientes.some(
+        (paciente: tipoPaciente) => paciente.email === data.email
       )
-      const telefoneExiste = dataPaciente.some(
-        (p: tipoPaciente) => p.telefone === data.telefone
+      const telefoneExiste = pacientes.some(
+        (paciente: tipoPaciente) => paciente.telefone === data.telefone
       )
 
       if (emailExiste) {
         setError('email', { type: 'manual', message: 'Email já cadastrado' })
+        return
       }
 
       if (telefoneExiste) {
@@ -46,30 +47,43 @@ function Cadastro () {
           type: 'manual',
           message: 'Telefone já cadastrado'
         })
+        return
       }
 
-      if (!emailExiste && !telefoneExiste) {
-        const dataPayload = {
-          // id: 'idgerado',
+      const pacientePayload = {
           nome: data.nome.trim(),
-          telefone: data.telefone.replace(/\D/g, ''),
           email: data.email,
+          telefone: data.telefone.replace(/\D/g, ''),
           senha: data.senha,
-          acompanhante: data.acompanhante ? 'S' : 'N'
+          acompanhantes: data.acompanhantes ? 's' : 'n'
         }
 
-        const pacResponse = await fetch(URL_PACIENTES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataPayload)
-        })
+      await fetch(`${URL_PACIENTES}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pacientePayload)
+      })
 
-        const pacRegistro = await pacResponse.json()
-        login(pacRegistro)
+      const registerResponse = await fetch(`${URL_PACIENTES}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: pacientePayload.email,
+          senha: pacientePayload.senha
+        })
+      })
+
+      if (!registerResponse.ok) throw new Error(registerResponse.statusText)
+
+      const { token } = await registerResponse.json()
+      console.log(token)
+      login(token)
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao cadastrar paciente.', error)
+        serverError ? setServerError(true) : setServerError(true)
       }
-    } catch {
-      console.error('Erro ao cadastrar paciente.')
-      serverError ? setServerError(true) : setServerError(true)
     }
   }
 
@@ -243,13 +257,13 @@ function Cadastro () {
                 <input
                   type='checkbox'
                   id='idAcompanhante'
-                  {...register('acompanhante')}
+                  {...register('acompanhantes')}
                 />
                 <label htmlFor='idAcompanhante'>
                   Tem um cuidador ou acompanhante?
                 </label>
               </div>
-              <MensagemErro error={errors.acompanhante} />
+              <MensagemErro error={errors.acompanhantes} />
             </div>
             <div>
               <p className='mx-auto text-sm opacity-75'>
