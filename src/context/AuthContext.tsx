@@ -23,7 +23,8 @@ export function AuthProvider ({ children }: { children: React.ReactNode }) {
             nome: decoded.nome,
             email: decoded.email,
             telefone: decoded.telefone,
-            acompanhantes: decoded.acompanhantes
+            acompanhantes: decoded.acompanhantes,
+            dadosSaude: decoded.dadosSaude
           } as tipoTokenPayload)
         } else {
           localStorage.removeItem('token')
@@ -48,7 +49,8 @@ export function AuthProvider ({ children }: { children: React.ReactNode }) {
         nome: decoded.nome,
         email: decoded.email,
         telefone: decoded.telefone,
-        acompanhantes: decoded.acompanhantes
+        acompanhantes: decoded.acompanhantes,
+        dadosSaude: decoded.dadosSaude
       } as tipoTokenPayload)
       localStorage.setItem('token', data)
 

@@ -6,7 +6,6 @@ import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import type { tipoAvaliacao } from '../../types/tipoAvaliacao'
 import MensagemErro from '../../components/MensagemErro/MensagemErro'
-import { formatarData } from '../../utils/formatarData'
 const URL_AVALIACOES = import.meta.env.VITE_API_BASE_AVALIACOES
 
 function Avaliacoes () {
@@ -24,11 +23,10 @@ function Avaliacoes () {
 
   const onSubmit: SubmitHandler<tipoAvaliacao> = async data => {
     const avaliacao = {
-      // id: "abc",
       especialidade: data.especialidade,
       nota: data.nota,
       comentario: data.comentario,
-      data_avaliacao: formatarData(new Date().toISOString())
+      data_avaliacao: new Date().toISOString().slice(0, 19)
     }
 
     try {

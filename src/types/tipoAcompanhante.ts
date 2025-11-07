@@ -5,5 +5,5 @@ export type tipoAcompanhante = {
     email: string;
     emailConfirmado: string;
     parentesco: string;
-    id_paciente: string;
+    idPaciente: string;
 }

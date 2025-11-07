@@ -19,6 +19,7 @@ import logoUmane from '../../assets/images/logo_parceiro2.png'
 import logoSSSP from '../../assets/images/logo_parceiro3.png'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 import { useAuth } from '../../context/AuthContext';
+import SaudeForm from '../../components/SaudeForm/SaudeForm'
 
 function Home () {
   const [index, setIndex] = useState(0)
@@ -230,6 +231,8 @@ function Home () {
           </ul>
         </div>
       </section>
+
+      <SaudeForm />
 
       {
         paciente?.acompanhantes == 's'?

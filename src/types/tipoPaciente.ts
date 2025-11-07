@@ -16,4 +16,5 @@ export type tipoTokenPayload = {
     telefone: string;
     acompanhantes: string;
     exp: number;
+    dadosSaude: string;
 }

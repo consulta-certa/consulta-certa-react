@@ -5,5 +5,5 @@ export type tipoConteudo = {
     texto: string;
     video: string;
     imagem: string;
-    data_publicacao: string;
+    dataPublicacao: string;
 }

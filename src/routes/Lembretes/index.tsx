@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
-import { formatarData } from '../../utils/formatarData'
 import type { tipoConsulta } from '../../types/tipoConsulta'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import MensagemErro from '../../components/MensagemErro/MensagemErro'
@@ -29,7 +28,7 @@ function Lembretes () {
     const buscarConsultas = async () => {
       try {
         const response = await fetch(
-          `${URL_CONSULTAS}?id_paciente=${paciente?.id}`
+          `${URL_CONSULTAS}?id_paciente=${paciente?.sub}`
         )
         const dados = await response.json()
         console.log(dados)
@@ -47,11 +46,10 @@ function Lembretes () {
 
     try {
       const consultaPayload = {
-        // id: data.id,
         especialidade: data.especialidade,
-        data_consulta: formatarData(data.data_consulta),
-        status: 'A',
-        id_paciente: paciente?.id
+        data_consulta: data.dataConsulta,
+        ativa: 's',
+        id_paciente: paciente?.sub
       }
 
       const consultaRes = await fetch(`${URL_CONSULTAS}`, {
@@ -63,13 +61,12 @@ function Lembretes () {
       if (!consultaRes.ok) throw new Error('Erro ao registrar consulta.')
 
       const jsonPayload = {
-        // id: data.id,
         nome: paciente?.nome,
         email: paciente?.email,
         telefone: paciente?.telefone,
         especialidade: data.especialidade,
-        data_consulta: formatarData(data.data_consulta),
-        id_paciente: paciente?.id
+        data_consulta: data.dataConsulta,
+        id_paciente: paciente?.sub
       }
 
       console.log(jsonPayload)
@@ -99,7 +96,7 @@ function Lembretes () {
                 <ItemLembrete
                   key={lembrete.id}
                   especialidade={lembrete.especialidade}
-                  horario={lembrete.data_consulta
+                  horario={lembrete.dataConsulta
                     .replace(':', 'h')
                     .replace(' ', ' às ')}
                   status={lembrete.status}
@@ -146,7 +143,7 @@ function Lembretes () {
                   <input
                     type='datetime-local'
                     id='idDataConsulta'
-                    {...register('data_consulta', {
+                    {...register('dataConsulta', {
                       required: 'Campo obrigatório',
                       validate: valor => {
                         const dataMinima = new Date()
@@ -162,7 +159,7 @@ function Lembretes () {
                       }
                     })}
                   />
-                  <MensagemErro error={errors.data_consulta} />
+                  <MensagemErro error={errors.dataConsulta} />
                 </div>
               </fieldset>
               <button type='submit'>Registrar</button>
