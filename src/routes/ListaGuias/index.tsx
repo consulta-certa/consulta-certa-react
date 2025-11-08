@@ -31,7 +31,7 @@ function ListaGuias () {
       setGuiasTeleconsulta(guiasTeleconsultaSelecionados)
 
       const guiasGeraisSelecionados = data.filter(
-        (conteudo: tipoConteudo) => conteudo.tipo === 't'
+        (conteudo: tipoConteudo) => conteudo.tipo === 'i'
       )
       setGuiasGerais(guiasGeraisSelecionados)
     } catch (error) {
@@ -52,43 +52,27 @@ function ListaGuias () {
       <Titulo titulo='Guias'></Titulo>
       <h2 className='titulo-2'>Qual tipo de ajuda você gostaria?</h2>
 
-      <section className='flex max-md:flex-col justify-between w-6/8 min-w-[280px] px-[1vw] mt-[2vh]'>
-        <div className='flex items-center max-md:items-end flex-col max-md:flex-row gap-[2vh] max-md:gap-[2vw] md:mt-[1vh] max-md:px-[2vw]'>
-          {['Portal do Paciente', 'Teleconsulta', 'Geral']}
-          <button
-            className={`text-xl max-md:text-md font-semibold text-center w-full p-4 md:rounded-l-xl max-md:rounded-t-xl transition-all ease-in duration-200 cursor-pointer ${
-              categoria == 0
-                ? 'bg-cc-cinza'
-                : 'bg-cc-azul text-white font-bold scale-105'
-            }`}
-            onClick={() => setCategoria(0)}
-          >
-            Portal do Paciente HC
-          </button>
-          <button
-            className={`text-xl max-md:text-md font-semibold text-center w-full p-4 md:rounded-l-xl max-md:rounded-t-xl transition-all ease-in duration-200 cursor-pointer ${
-              categoria == 1
-                ? 'bg-cc-cinza'
-                : 'bg-cc-azul text-white font-bold scale-105'
-            }`}
-            onClick={() => setCategoria(1)}
-          >
-            Teleconsulta
-          </button>
-          <button
-            className={`text-xl max-md:text-md font-semibold text-center w-full p-4 md:rounded-l-xl max-md:rounded-t-xl transition-all ease-in duration-200 cursor-pointer ${
-              categoria == 2
-                ? 'bg-cc-cinza'
-                : 'bg-cc-azul text-white font-bold scale-105'
-            }`}
-            onClick={() => setCategoria(2)}
-          >
-            Geral
-          </button>
+      <section className='flex max-md:flex-col justify-center items-center gap-4 w-full mt-[5vh]'>
+        <div className='flex flex-col items-center gap-4 w-1/4 max-md:w-full'>
+          {['Portal do Paciente', 'Teleconsulta', 'Geral'].map(
+            (botao, index) => (
+              <button
+                className={`w-full min-h-10 rounded-full cursor-pointer hover:scale-105 active:bg-cc-azul-escuro active:text-white transition-all duration-200 ease-in ${
+                  categoria == index
+                    ? 'bg-cc-azul text-white font-bold'
+                    : 'bg-cc-cinza'
+                }`}
+                onClick={() => setCategoria(index)}
+                key={index}
+              >
+                {botao}
+              </button>
+            )
+          )}
         </div>
-        <div className='rounded-lg bg-cc-azul p-8 h-[44vh] w-full'>
+        <div className='rounded-lg bg-cc-azul p-4 h-[50vh] w-full max-w-fit flex items-center justify-center'>
           {guiasPortal.length > 0 ? (
-            <ul className='flex flex-col items-center overflow-y-scroll gap-[2vh] h-full'>
+            <ul className='flex flex-col items-center overflow-y-scroll overflow-x-clip gap-[2vh] h-full p-4 pr-6'>
               {(categoria == 0
                 ? guiasPortal
                 : categoria == 1

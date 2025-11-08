@@ -3,7 +3,7 @@ import type { tipoConteudo } from '../../types/tipoConteudo'
 import { useParams } from 'react-router-dom'
 import { converterPath } from '../../utils/converterPath'
 import { useEffect, useState } from 'react'
-import Erro from '../Erro'
+import LoadingElement from '../../components/LoadingElement/LoadingElement'
 const URL_CONTEUDOS = import.meta.env.VITE_API_BASE_CONTEUDOS
 
 function Guia () {
@@ -32,24 +32,11 @@ function Guia () {
 
   useEffect(() => {
     fetchGuia()
-  })
+  }, [name])
 
-  if (!guia) {
-    return <Erro />
-  }
+  const descricao = guia && guia.texto.split('\n')
 
-  const descricao = guia.texto.split('\n')
-
-  if (loading)
-    return (
-      <div className='animate-pulse'>
-        <div className='h-4 bg-gray-300 rounded w-3/4 mb-2'></div>
-        <div className='h-4 bg-gray-300 rounded w-1/2 mb-2'></div>
-        <div className='h-32 bg-gray-300 rounded'></div>
-      </div>
-    )
-
-  return (
+  return guia && descricao ? (
     <main>
       <Titulo titulo='Guia' />
       <h2 className='titulo-2'>{guia.titulo}</h2>
@@ -73,6 +60,10 @@ function Guia () {
         </section>
       </div>
     </main>
+  ) : loading ? (
+    <LoadingElement />
+  ) : (
+    <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
   )
 }
 

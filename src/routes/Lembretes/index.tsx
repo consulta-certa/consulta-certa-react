@@ -28,7 +28,7 @@ function Lembretes () {
   } = useForm<tipoConsulta>()
 
   useEffect(() => {
-    const buscarConsultas = async () => {
+    const fetchConsultas = async () => {
       try {
         setLoading(true)
         const response = await fetch(URL_CONSULTAS)
@@ -47,8 +47,8 @@ function Lembretes () {
       }
     }
 
-    buscarConsultas()
-  }, [navigate, paciente])
+    fetchConsultas()
+  }, [])
 
   const onSubmit: SubmitHandler<tipoConsulta> = async data => {
     try {
@@ -67,18 +67,7 @@ function Lembretes () {
 
       if (!response.ok) throw new Error('Erro ao registrar consulta.')
 
-      await fetch(`${URL_API_LEMBRETES}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: paciente?.nome,
-          email: paciente?.email,
-          telefone: paciente?.telefone,
-          especialidade: data.especialidade,
-          data_consulta: data.dataConsulta,
-          id_paciente: paciente?.sub
-        })
-      })
+      await fetch(`${URL_API_LEMBRETES}`)
 
       setEnviado(true)
     } catch (error) {
@@ -116,7 +105,7 @@ function Lembretes () {
             </p>
           )}
         </section>
-        <section className='w-[32%] max-md:w-full'>
+        <section className='max-md:w-full'>
           <h2 className='titulo-2'>Criar novo lembrete?</h2>
           <section className='form'>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -171,7 +160,9 @@ function Lembretes () {
                   <MensagemErro error={errors.dataConsulta} />
                 </div>
               </fieldset>
-              <button type='submit'>Registrar</button>
+              <button type='submit'>
+                {loading ? 'Carregando...' : 'Registrar'}
+              </button>
             </form>
           </section>
         </section>
