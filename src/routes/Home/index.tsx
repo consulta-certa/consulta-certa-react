@@ -235,8 +235,8 @@ function Home () {
       <SaudeForm />
 
       {
-        paciente?.acompanhantes == 's'?
-        <ModalConfirmar operacao={() => setConfirmado(false)} mensagem='Cadastre seu acompanhante!' descricao='Não se esqueça de acessar o perfil e registrar as informações do acompanhante.' confirmacao={confirmado}/> : ''
+        paciente?.acompanhantes == 'n'?
+        <ModalConfirmar operacao={() => setConfirmado(false)} mensagem='Cadastre seu acompanhante!' descricao='Caso tenha um acompanhante, não se esqueça de acessar o perfil e registrar as informações.' confirmacao={confirmado}/> : ''
       }
     </main>
   )

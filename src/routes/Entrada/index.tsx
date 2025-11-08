@@ -11,8 +11,9 @@ const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
 function Entrada () {
   const { login } = useAuth()
-  const [mostrar, setMostrar] = useState<boolean>(false)
-  const [serverError, setServerError] = useState<boolean>(false)
+  const [mostrar, setMostrar] = useState(false)
+  const [serverError, setServerError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -23,6 +24,7 @@ function Entrada () {
 
   const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
+      setLoading(true)
       const jsonPayload = {
         email: data.email,
         senha: data.senha
@@ -44,7 +46,7 @@ function Entrada () {
         }
 
         if (response.status == 500) {
-          serverError ? setServerError(true) : setServerError(true)
+          setServerError(true)
         }
 
         return
@@ -55,8 +57,11 @@ function Entrada () {
 
     } catch (error) {
       if (error instanceof Error) {
-        serverError ? setServerError(true) : setServerError(true)
+        console.error('Erro ao fazer login', error)
+        setServerError(true)
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -133,7 +138,10 @@ function Entrada () {
               </div>
             </div>
           </fieldset>
-          <button type='submit'>Entrar</button>
+          <button type='submit'>{
+          loading ? 'Carregando...' :
+           'Entrar'
+          }</button>
         </form>
       </section>
       <p className='mb-[2vh]'>

@@ -11,8 +11,9 @@ const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
 function Cadastro () {
   const { login } = useAuth()
-  const [mostrar, setMostrar] = useState<boolean>(false)
-  const [serverError, setServerError] = useState<boolean>(false)
+  const [mostrar, setMostrar] = useState(false)
+  const [serverError, setServerError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -27,6 +28,7 @@ function Cadastro () {
 
   const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
+      setLoading(true)
       const response = await fetch(URL_PACIENTES)
       const pacientes: tipoPaciente[] = await response.json()
 
@@ -82,8 +84,10 @@ function Cadastro () {
     } catch (error) {
       if (error instanceof Error) {
         console.error('Erro ao cadastrar paciente.', error)
-        serverError ? setServerError(true) : setServerError(true)
+        setServerError(true)
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -275,7 +279,10 @@ function Cadastro () {
               </p>
             </div>
           </fieldset>
-          <button type='submit'>Criar um perfil</button>
+          <button type='submit'>{
+          loading ? 'Carregando...' :
+          'Criar um perfil'
+          }</button>
         </form>
       </section>
       <p className='mb-[2vh]'>
