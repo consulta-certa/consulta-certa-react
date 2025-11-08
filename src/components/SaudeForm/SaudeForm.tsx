@@ -6,19 +6,19 @@ import { IoMdClose } from 'react-icons/io'
 import ModalConfirmar from '../ModalConfirmar/ModalConfirmar'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import type { tipoConsulta } from '../../types/tipoConsulta'
-const URL_API_DADOS_SAUDE = import.meta.env.VITE_API_BASE_DADOS_SAUDE
+import { agora } from '../../utils/gerarData'
+const URL_API_DADOS_SAUDE = import.meta.env.VITE_API_BASE_PREVER_DADOS_SAUDE
 const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
-const URL_CONSULTAS = import.meta.env.VITE_API_BASE_CONSULTAS
+const URL_DADOS_SAUDE = import.meta.env.VITE_API_BASE_DADOS_SAUDE
 
 function SaudeForm () {
   const [aberto, setAberto] = useState<boolean>(false)
   const [enviado, setEnviado] = useState<boolean>(false)
   const [preenchido, setPreenchido] = useState<boolean | null>(null)
+  const [semConsulta, setSemConsulta] = useState<boolean | null>(null)
   const [serverError, setServerError] = useState<boolean>(false)
   const [selected, setSelected] = useState(0)
   const [deficiencia, setDeficiencia] = useState<boolean>(false)
-  const [semConsulta, setSemConsulta] = useState<boolean>(false)
 
   const navigate = useNavigate()
   const { paciente } = useAuth()
@@ -43,86 +43,127 @@ function SaudeForm () {
 
   useEffect(() => {
     setEnviado(paciente?.dadosSaude == 's')
-  }, [enviado, preenchido, semConsulta, aberto])
+  }, [])
 
   const onSubmit: SubmitHandler<tipoSaude> = async data => {
     try {
-      const response = await fetch(URL_CONSULTAS)
-      const consultas: tipoConsulta[] = await response.json()
-      const consulta = consultas.find(
-        (c: tipoConsulta) => c.idPaciente === paciente?.sub
-      )
+      const pppp = {
+        idPaciente: paciente?.sub,
+        idade: data.idade,
+        sexo: data.sexo,
+        temHipertensao: data.temHipertensao ? 's' : 'n',
+        temDiabetes: data.temDiabetes ? 's' : 'n',
+        consomeAlcool: data.consomeAlcool ? 's' : 'n',
+        possuiDeficiencia: data.possuiDeficiencia ? 's' : 'n',
+        tipoDeficiencia: data.tipoDeficiencia ? data.tipoDeficiencia : null,
+        dataPreenchimento: agora
+      }
 
-      if (consulta) {
-        const resp = await fetch(URL_API_DADOS_SAUDE, {
-          method: 'POST',
+      const response = await fetch(URL_DADOS_SAUDE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pppp)
+      })
+      
+      const resp = await fetch(URL_API_DADOS_SAUDE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_paciente: paciente?.sub
+        })
+      })
+      
+      if (resp.ok) {
+        await fetch(`${URL_PACIENTES}/${paciente && paciente.sub}`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            idade: data.idade,
-            genero: data.sexo,
-            tem_hipertensao: data.temHipertensao ? 's' : 'n',
-            tem_diabetes: data.temDiabetes ? 's' : 'n',
-            consome_alcool: data.consomeAlcool ? 's' : 'n',
-            possui_deficiencia: data.possuiDeficiencia ? 's' : 'n',
-            tipo_deficiencia: data.tipoDeficiencia
-              ? data.tipoDeficiencia
-              : null,
-            data_agendamento: new Date().toISOString().slice(0, 19),
-            id_paciente: paciente?.sub,
-            id_consulta: consulta?.id,
-            data_consulta: consulta?.dataConsulta
+            nome: paciente?.nome,
+            telefone: paciente?.telefone,
+            email: paciente?.email,
+            acompanhantes: paciente?.acompanhantes,
+            dadosSaude: 's'
           })
         })
 
-        if (resp.ok) {
-          await fetch(`${URL_PACIENTES}/${paciente && paciente.sub}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              nome: paciente?.nome,
-              telefone: paciente?.telefone,
-              email: paciente?.email,
-              acompanhantes: paciente?.acompanhantes,
-              dadosSaude: 's'
-            })
-          })
+        if (paciente) paciente.dadosSaude = 's'
+        setPreenchido(true)
 
-          if (paciente) paciente.dadosSaude = 's'
+      } else if (response.ok) {
+        const idDadosSaude:{id:string} = await response.json()
+        const id = idDadosSaude && idDadosSaude.id
+
+        await fetch(`${URL_DADOS_SAUDE}/${id}`, {
+          method: 'DELETE'
+        })
+
+        if (resp.status == 500) {
+          throw new Error(resp.statusText)
         }
-      } else {
-        setSemConsulta(true)
-        fechar()
+
+        if (resp.status == 404) {
+          setSemConsulta(true)
+        }
       }
-      
+
     } catch (error) {
       if (error instanceof Error) {
         console.error('Erro ao cadastrar paciente.', error)
-        serverError ? setServerError(true) : setServerError(true)
+        setServerError(true)
       }
+    } finally {
+      fechar()
     }
   }
 
-  if (!aberto && !enviado && !semConsulta) {
-    return (
-      <button
-        className='p-4 bg-cc-azul rounded-xl text-lg text-white fixed right-8'
-        onClick={() => {
-          if (!paciente) {
-            navigate('/entrar')
-          }
-          setAberto(true)
-        }}
-      >
-        {paciente ? 'Termine seu cadastro!' : 'Crie um perfil personalizado'}
-      </button>
-    )
-  }
+  return (
+    <aside className='fixed'>
+      {serverError && (
+        <ModalConfirmar
+          operacao={() => setServerError(false)}
+          mensagem='Erro ao acessar servidor'
+          descricao='Aguarde um pouco e tente novamente.'
+          confirmacao={serverError}
+        />
+      )}
 
-  if (!enviado && !semConsulta) {
-    return (
-      <article
+      {enviado && preenchido && (
+        <ModalConfirmar
+          operacao={() => setPreenchido(false)}
+          mensagem='Cadastro concluido!'
+          descricao='Isso será usado para te ajudar ainda mais.'
+          confirmacao={preenchido}
+        />
+      )}
+
+      {semConsulta && (
+        <ModalConfirmar
+          operacao={() => navigate('/lembretes')}
+          mensagem='Sem consulta ativa cadastrada!'
+          descricao='Para enviar suas informações de saúde, vá até a página de lembretes e registre um novo lembrete.'
+          confirmacao={semConsulta}
+        />
+      )}
+
+      {!enviado && (
+        <button
+          className={`p-4 bg-cc-azul rounded-xl text-lg text-white fixed right-8`}
+          onClick={() => {
+            if (!paciente) {
+              navigate('/entrar')
+            }
+            setAberto(true)
+          }}
+        >
+          {paciente ? 'Termine seu cadastro!' : 'Crie um perfil personalizado'}
+        </button>
+      )}
+
+      <section
         className={`form fixed shadow-2xl max-sm:-mt-[10vh] transition-transform duration-300 ease-in ${
-          aberto ? 'translate-y-0' : 'translate-y-[150vh]'
+          aberto && !enviado && !preenchido
+            ? 'translate-x-0'
+            : 'translate-x-[150vw]'
         }`}
       >
         <div
@@ -299,31 +340,9 @@ function SaudeForm () {
           </fieldset>
           <button type='submit'>Concluir</button>
         </form>
-      </article>
-    )
-  }
-
-  if (enviado && preenchido && !semConsulta) {
-    return (
-      <ModalConfirmar
-        operacao={() => setPreenchido(false)}
-        mensagem='Cadastro concluido!'
-        descricao='Isso será usado para te ajudar ainda mais.'
-        confirmacao={preenchido}
-      />
-    )
-  }
-
-  if (semConsulta) {
-    return (
-      <ModalConfirmar
-        operacao={() => setSemConsulta(false)}
-        mensagem='Cadastro concluido!'
-        descricao='Isso será usado para te ajudar ainda mais.'
-        confirmacao={semConsulta}
-      />
-    )
-  }
+      </section>
+    </aside>
+  )
 }
 
 export default SaudeForm
