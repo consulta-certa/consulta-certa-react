@@ -51,7 +51,6 @@ function Entrada () {
       }
 
       const { token } = await response.json()
-      console.log(token)
       login(token)
 
     } catch (error) {

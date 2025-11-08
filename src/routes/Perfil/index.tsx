@@ -82,9 +82,7 @@ function Perfil() {
           idPaciente: paciente?.sub
         })
       })
-
-      console.log(paciente?.telefone)
-      console.log(data.telefone)
+      
       fechar()
       setEnviado(true)
       if (!response.ok) throw new Error('Erro ao salvar o acompanhante')
