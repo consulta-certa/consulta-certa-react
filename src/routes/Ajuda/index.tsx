@@ -9,9 +9,11 @@ const URL_CONTEUDO = import.meta.env.VITE_API_BASE_CONTEUDOS
 function Ajuda () {
   const [faqs, setFaqs] = useState<tipoConteudo[]>([])
   const [aberto, setAberto] = useState<number | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const fetchFaqs = async () => {
     try {
+      setLoading(true)
       const response = await fetch(`${URL_CONTEUDO}`)
       const data = await response.json()
 
@@ -19,8 +21,12 @@ function Ajuda () {
         (conteudo: tipoConteudo) => conteudo.tipo == 'f'
       )
       setFaqs(faqsSelecionadas)
-    } catch {
-      console.error('Erro ao buscar os dados de FAQ')
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao buscar os dados de FAQ', error)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -61,6 +67,8 @@ function Ajuda () {
                 />
               ))}
             </ul>
+          ) : loading ? (
+            <LoadingElement />
           ) : (
             <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
           )}

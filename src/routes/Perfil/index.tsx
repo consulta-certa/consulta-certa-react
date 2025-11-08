@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext'
 import Titulo from '../../components/Titulo/Titulo'
 import Linha from '../../components/Linha/Linha'
 import { BsFillPersonVcardFill } from 'react-icons/bs'
@@ -7,16 +7,18 @@ import { FaSquarePhone } from 'react-icons/fa6'
 import { IoMdClose, IoMdExit, IoMdMail } from 'react-icons/io'
 import { RiParentFill } from 'react-icons/ri'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import type { tipoAcompanhante } from '../../types/tipoAcompanhante';
-import MensagemErro from '../../components/MensagemErro/MensagemErro';
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import type { tipoAcompanhante } from '../../types/tipoAcompanhante'
+import MensagemErro from '../../components/MensagemErro/MensagemErro'
 const URL_ACOMPANHANTES = import.meta.env.VITE_API_BASE_ACOMPANHANTES
+const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
-function Perfil() {
+function Perfil () {
   const { paciente, logout } = useAuth()
   const [aberto, setAberto] = useState(false)
   const [enviado, setEnviado] = useState(false)
-  const [serverError, setServerError] = useState<boolean>(false)
+  const [serverError, setServerError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -36,8 +38,10 @@ function Perfil() {
 
   const onSubmit: SubmitHandler<tipoAcompanhante> = async data => {
     try {
+      setLoading(true)
       const responseAcompanhante = await fetch(URL_ACOMPANHANTES)
-      const acompanhantes:tipoAcompanhante[] = await responseAcompanhante.json()
+      const acompanhantes: tipoAcompanhante[] =
+        await responseAcompanhante.json()
 
       const emailExistente = acompanhantes.some(
         (a: tipoAcompanhante) => a.email === data.email
@@ -52,22 +56,34 @@ function Perfil() {
       const telfoneIndevido = paciente?.telefone === data.telefone
 
       if (emailExistente) {
-        setError('email', { type: 'manual', message: 'Acompanhante já cadastrado com esse email' })
+        setError('email', {
+          type: 'manual',
+          message: 'Acompanhante já cadastrado com esse email'
+        })
         return
       }
 
       if (emailIndevido) {
-        setError('email', { type: 'manual', message: 'Você já foi cadastrado com esse email' })
+        setError('email', {
+          type: 'manual',
+          message: 'Você já foi cadastrado com esse email'
+        })
         return
       }
 
       if (telefoneExistente) {
-        setError('telefone', { type: 'manual', message: 'Acompanhante já cadastrado com esse telefone' })
+        setError('telefone', {
+          type: 'manual',
+          message: 'Acompanhante já cadastrado com esse telefone'
+        })
         return
       }
 
       if (telfoneIndevido) {
-        setError('telefone', { type: 'manual', message: 'Você já foi cadastrado com esse telefone' })
+        setError('telefone', {
+          type: 'manual',
+          message: 'Você já foi cadastrado com esse telefone'
+        })
         return
       }
 
@@ -82,14 +98,32 @@ function Perfil() {
           idPaciente: paciente?.sub
         })
       })
-      
-      fechar()
-      setEnviado(true)
-      if (!response.ok) throw new Error('Erro ao salvar o acompanhante')
 
-    } catch {
-      console.error("Erro ao cadastrar acompanhante.")
-      serverError ? setServerError(true) : setServerError(true)
+      if (response.ok) {
+        await fetch(`${URL_PACIENTES}/${paciente && paciente.sub}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: paciente?.nome,
+            telefone: paciente?.telefone,
+            email: paciente?.email,
+            acompanhantes: 's',
+            dadosSaude: paciente?.dadosSaude
+          })
+        })
+
+        if (paciente) paciente.acompanhantes = 's'
+
+        fechar()
+        setEnviado(true)
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao cadastrar acompanhante.', error)
+        setServerError(true)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -148,7 +182,9 @@ function Perfil() {
       )}
 
       <section
-        className={`form fixed shadow-2xl max-sm:-mt-[10vh] transition-transform duration-300 ease-in ${aberto ? 'translate-y-0' : 'translate-y-[150vh]'}`}
+        className={`form fixed shadow-2xl max-sm:-mt-[10vh] transition-transform duration-300 ease-in ${
+          aberto ? 'translate-y-0' : 'translate-y-[150vh]'
+        }`}
       >
         <div
           className='w-fit rounded-full p-2 bg-cc-azul text-white text-xl absolute right-2 top-2 hover:scale-105 hover:bg-cc-azul-escuro cursor-pointer transition-all duration-300 ease-in'
@@ -256,24 +292,34 @@ function Perfil() {
                 Parentesco <span className='text-red-500 font-bold'>*</span>
               </label>
               <select
-                id="idParentesco"
+                id='idParentesco'
                 {...register('parentesco', { required: 'Campo obrigatório' })}
                 defaultValue=''
               >
-                <option value="" disabled>Selecione uma opção</option>
-                <option value="filho/a">Filho/a</option>
-                <option value="cuidador/a">Cuidador/a</option>
-                <option value="neto/a">Neto/a</option>
-                <option value="amigo/a">Amigo/a</option>
-                <option value="conjuge">Cônjuge (marido/esposa, namorado/a )</option>
-                <option value="segundo_grau">Parentes de 2º Grau (pesquisar)</option>
-                <option value="terceiro_grau">Parentes de 2º Grau (pesquisar)</option>
-                <option value="outro">Outro</option>
+                <option value='' disabled>
+                  Selecione uma opção
+                </option>
+                <option value='filho/a'>Filho/a</option>
+                <option value='cuidador/a'>Cuidador/a</option>
+                <option value='neto/a'>Neto/a</option>
+                <option value='amigo/a'>Amigo/a</option>
+                <option value='conjuge'>
+                  Cônjuge (marido/esposa, namorado/a )
+                </option>
+                <option value='segundo_grau'>
+                  Parentes de 2º Grau (pesquisar)
+                </option>
+                <option value='terceiro_grau'>
+                  Parentes de 2º Grau (pesquisar)
+                </option>
+                <option value='outro'>Outro</option>
               </select>
               <MensagemErro error={errors.parentesco} />
             </div>
           </fieldset>
-          <button type='submit'>Registrar</button>
+          <button type='submit'>
+            {loading ? 'Carregando...' : 'Registrar'}
+          </button>
         </form>
       </section>
 

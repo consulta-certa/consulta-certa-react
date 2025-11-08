@@ -10,6 +10,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import type { tipoMensagem } from '../../types/tipoMensagem'
 import MensagemErro from '../../components/MensagemErro/MensagemErro'
 import { useAuth } from '../../context/AuthContext'
+import LoadingElement from '../../components/LoadingElement/LoadingElement'
 const URL_CONTATOS = import.meta.env.VITE_API_BASE_CONTATOS
 // const URL_API_EMAIL = import.meta.env.VITE_API_ENVIAR_EMAI
 
@@ -18,6 +19,7 @@ function Contato () {
   const [enviado, setEnviado] = useState(false)
   const [contatos, setContatos] = useState<tipoContato[]>([])
   const [indiceAtual, setIndiceAtual] = useState(0)
+  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -31,11 +33,16 @@ function Contato () {
   useEffect(() => {
     const buscarContatos = async () => {
       try {
+        setLoading(true)
         const response = await fetch(`${URL_CONTATOS}`)
-        const dados = await response.json()
+        const dados: tipoContato[] = await response.json()
         setContatos(dados)
-      } catch {
-        console.error('Erro ao buscar contatos')
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error('Erro ao buscar contatos', error)
+        }
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -46,14 +53,19 @@ function Contato () {
     /*
     // Simulação para envio de emails ao HC
     try {
+      setLoading(true)
       await fetch(URL_API_EMAIL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
-    } catch {
-      console.error('Erro ao enviar email')
-      serverError ? setServerError(true) : setServerError(true)
+    } catch (error) {
+     if (error instanceof Error) {
+      console.error('Erro ao enviar email', error)
+      setServerError(true)
+     }
+    } finally {
+      setLoading(false)
     }
     */
     console.log(data)
@@ -161,15 +173,21 @@ function Contato () {
                   <option value='' disabled>
                     Selecione uma opção
                   </option>
-                  { contatos.length > 0 ?
-                  
-                  contatos.map((contato, index) => (
-                    <option key={index} value={contato.email}>
-                      {contato.nome}
+                  {contatos.length > 0 ? (
+                    contatos.map((contato, index) => (
+                      <option key={index} value={contato.email}>
+                        {contato.nome}
+                      </option>
+                    ))
+                  ) : loading ? (
+                    <option value='' disabled>
+                      Carregando...
                     </option>
-                  )):
-                  <option value="" disabled>Conteúdo indisponível, servidor fora do ar.</option>
-                  }
+                  ) : (
+                    <option value='' disabled>
+                      Conteúdo indisponível, servidor fora do ar.
+                    </option>
+                  )}
                 </select>
                 <MensagemErro error={errors.destinatario} />
               </div>
@@ -270,8 +288,12 @@ function Contato () {
                 </p>
               </li>
             </ul>
+          ) : loading ? (
+            <LoadingElement />
           ) : (
-            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
+            <p className='server-error'>
+              Conteúdo indisponível, servidor fora do ar.
+            </p>
           )}
         </section>
       </div>

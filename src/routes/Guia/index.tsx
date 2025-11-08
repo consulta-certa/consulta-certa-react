@@ -4,23 +4,29 @@ import { useParams } from 'react-router-dom'
 import { converterPath } from '../../utils/converterPath'
 import { useEffect, useState } from 'react'
 import Erro from '../Erro'
-const URL_CONTEUDOS = import.meta.env.VITE_API_BASE_CONTEUDOS;
+const URL_CONTEUDOS = import.meta.env.VITE_API_BASE_CONTEUDOS
 
 function Guia () {
   const { name } = useParams<string>()
   const [guia, setGuia] = useState<tipoConteudo>()
+  const [loading, setLoading] = useState(false)
 
   const fetchGuia = async () => {
     try {
+      setLoading(true)
       const response = await fetch(`${URL_CONTEUDOS}`)
-      const data = await response.json()
+      const data: tipoConteudo[] = await response.json()
 
       const guiaSelecionado = data.find(
         (conteudo: tipoConteudo) => converterPath(conteudo.titulo) === name
-			)
+      )
       setGuia(guiaSelecionado)
-    } catch {
-      console.error('Erro ao buscar os dados do guia')
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao buscar os dados do guia', error)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -29,10 +35,19 @@ function Guia () {
   })
 
   if (!guia) {
-    return <Erro/>
+    return <Erro />
   }
 
   const descricao = guia.texto.split('\n')
+
+  if (loading)
+    return (
+      <div className='animate-pulse'>
+        <div className='h-4 bg-gray-300 rounded w-3/4 mb-2'></div>
+        <div className='h-4 bg-gray-300 rounded w-1/2 mb-2'></div>
+        <div className='h-32 bg-gray-300 rounded'></div>
+      </div>
+    )
 
   return (
     <main>
