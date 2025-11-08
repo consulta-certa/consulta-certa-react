@@ -18,6 +18,8 @@ import Cadastro from './routes/Cadastro'
 import Entrada from './routes/Entrada'
 import { AuthProvider } from './context/AuthContext'
 import AuthRoute from './context/AuthRoute'
+import VerificadorDeEquipamento from './routes/TesteEquipamentos'
+import LocalizarUBS from './routes/LocalizarUbs' 
 
 const router = createBrowserRouter([
   {
@@ -45,6 +47,8 @@ const router = createBrowserRouter([
         )
       },
       { path: '/guias/guia/:name', element: <Guia /> },
+      { path: '/localizar-ubs', element: <LocalizarUBS /> },
+      { path: '/teste-equipamentos', element: <VerificadorDeEquipamento/> },
       { path: '/', element: <Home /> },
       {
         path: '/lembretes',

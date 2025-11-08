@@ -1,7 +1,8 @@
 export type tipoConsulta = {
     id: string;
     especialidade: string;
-    data_consulta: string;
-    status: string;
-    id_paciente: string;
+    dataConsulta: string;
+    ativa: string;
+    idPaciente: string;
+    dataAgendamento: string;
 }

@@ -11,8 +11,9 @@ const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 
 function Entrada () {
   const { login } = useAuth()
-  const [mostrar, setMostrar] = useState<boolean>(false)
-  const [serverError, setServerError] = useState<boolean>(false)
+  const [mostrar, setMostrar] = useState(false)
+  const [serverError, setServerError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -23,33 +24,44 @@ function Entrada () {
 
   const onSubmit: SubmitHandler<tipoPaciente> = async data => {
     try {
-      const response = await fetch(URL_PACIENTES)
-      const dataPaciente = await response.json()
-
-      const emailExiste = dataPaciente.some(
-        (p: tipoPaciente) => p.email === data.email
-      )
-      const senhaIncorreta = dataPaciente.some(
-        (p: tipoPaciente) => p.senha != data.senha
-      )
-
-      if (!emailExiste) {
-        setError('email', { type: 'manual', message: 'Email não cadastrado' })
+      setLoading(true)
+      const jsonPayload = {
+        email: data.email,
+        senha: data.senha
       }
 
-      if (senhaIncorreta) {
-        setError('senha', {
-          type: 'manual',
-          message: 'Senha incorreta'
-        })
+      const response = await fetch(`${URL_PACIENTES}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonPayload)
+      })
+
+      if (!response.ok) {
+        if (response.status == 404) {
+          setError('email', { type: 'manual', message: 'Email não cadastrado' })
+        }
+
+        if (response.status == 401) {
+          setError('senha', { type: 'manual', message: 'Senha incorreta' })
+        }
+
+        if (response.status == 500) {
+          setServerError(true)
+        }
+
+        return
       }
 
-      if (emailExiste && !senhaIncorreta) {
-        login(dataPaciente.find((p: tipoPaciente) => p.email === data.email))
+      const { token } = await response.json()
+      login(token)
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao fazer login', error)
+        setServerError(true)
       }
-    } catch {
-      console.error('Erro ao fazer login.')
-      serverError ? setServerError(true) : setServerError(true)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -126,7 +138,10 @@ function Entrada () {
               </div>
             </div>
           </fieldset>
-          <button type='submit'>Entrar</button>
+          <button type='submit'>{
+          loading ? 'Carregando...' :
+           'Entrar'
+          }</button>
         </form>
       </section>
       <p className='mb-[2vh]'>

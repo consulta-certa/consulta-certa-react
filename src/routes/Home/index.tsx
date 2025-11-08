@@ -19,6 +19,7 @@ import logoUmane from '../../assets/images/logo_parceiro2.png'
 import logoSSSP from '../../assets/images/logo_parceiro3.png'
 import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 import { useAuth } from '../../context/AuthContext';
+import SaudeForm from '../../components/SaudeForm/SaudeForm'
 
 function Home () {
   const [index, setIndex] = useState(0)
@@ -152,6 +153,11 @@ function Home () {
             icon={BsFillPinMapFill}
             label='UBS perto de mim'
           />
+          <HomeButton
+            path='/teste-equipamentos'
+            icon={BsFillPinMapFill}
+            label='Teste Seus Equipamentos'
+          />
         </ul>
       </section>
 
@@ -226,9 +232,11 @@ function Home () {
         </div>
       </section>
 
+      <SaudeForm />
+
       {
-        paciente?.acompanhante ?
-        <ModalConfirmar operacao={() => setConfirmado(false)} mensagem='Cadastre seu acompanhante!' descricao='Não se esqueça de acessar o perfil e registrar as informações do acompanhante.' confirmacao={confirmado}/> : ''
+        paciente?.acompanhantes == 'n'?
+        <ModalConfirmar operacao={() => setConfirmado(false)} mensagem='Cadastre seu acompanhante!' descricao='Caso tenha um acompanhante, não se esqueça de acessar o perfil e registrar as informações.' confirmacao={confirmado}/> : ''
       }
     </main>
   )
