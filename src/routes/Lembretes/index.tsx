@@ -58,11 +58,11 @@ function Lembretes () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           especialidade: data.especialidade,
-          dataConsulta: data.dataConsulta,
+          dataConsulta: data.dataConsulta + ':00',
           ativa: 's',
           idPaciente: paciente?.sub,
           dataAgendamento: agora
-        })
+      })
       })
 
       if (!response.ok) throw new Error('Erro ao registrar consulta.')

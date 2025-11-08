@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 import { converterPath } from '../../utils/converterPath'
 import { useEffect, useState } from 'react'
 import LoadingElement from '../../components/LoadingElement/LoadingElement'
+import { limparData } from '../../utils/gerarData'
+import { FaPen } from 'react-icons/fa'
 const URL_CONTEUDOS = import.meta.env.VITE_API_BASE_CONTEUDOS
 
 function Guia () {
@@ -40,6 +42,10 @@ function Guia () {
     <main>
       <Titulo titulo='Guia' />
       <h2 className='titulo-2'>{guia.titulo}</h2>
+      <div className='flex gap-4 my-2 self-start items-center ml-8 opacity-75'>
+        <FaPen/>
+        <p className=''>Publicado em: {limparData(guia.dataPublicacao)}</p>
+      </div>
       <div className='flex max-md:flex-col max-md:gap-[4vh] gap-[2vw] justify-center items-center min-h-[60vh] mt-[2vh]'>
         <section className='w-[20vw] max-md:w-[80vw] min-w-[280px] p-4 rounded-2xl bg-cc-azul'>
           {guia.video ? (

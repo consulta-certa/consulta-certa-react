@@ -83,6 +83,7 @@ function ListaGuias () {
                   path={converterPath(guia.titulo)}
                   titulo={guia.titulo}
                   image={imageTest}
+                  key={guia.id}
                 />
               ))}
             </ul>
