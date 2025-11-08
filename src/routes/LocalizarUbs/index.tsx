@@ -6,7 +6,7 @@ import { BsFillPinMapFill } from 'react-icons/bs';
 import type { ResultadoBuscaUBS } from '../../types/tipoUbs'; 
 
 // URL API no RENDER!
-const API_BASE_URL = 'https:///buscar-ubs-perto-api.onrender.com';
+const API_BASE_URL = 'https://buscar-ubs-perto-api.onrender.com';
 
 function LocalizarUBS() {
   const [cep, setCep] = useState('');
