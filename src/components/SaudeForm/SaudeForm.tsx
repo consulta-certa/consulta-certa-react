@@ -12,13 +12,14 @@ const URL_PACIENTES = import.meta.env.VITE_API_BASE_PACIENTES
 const URL_DADOS_SAUDE = import.meta.env.VITE_API_BASE_DADOS_SAUDE
 
 function SaudeForm () {
-  const [aberto, setAberto] = useState<boolean>(false)
-  const [enviado, setEnviado] = useState<boolean>(false)
+  const [aberto, setAberto] = useState(false)
+  const [enviado, setEnviado] = useState(false)
   const [preenchido, setPreenchido] = useState<boolean | null>(null)
   const [semConsulta, setSemConsulta] = useState<boolean | null>(null)
-  const [serverError, setServerError] = useState<boolean>(false)
+  const [serverError, setServerError] = useState(false)
   const [selected, setSelected] = useState(0)
-  const [deficiencia, setDeficiencia] = useState<boolean>(false)
+  const [deficiencia, setDeficiencia] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const navigate = useNavigate()
   const { paciente } = useAuth()
@@ -47,6 +48,7 @@ function SaudeForm () {
 
   const onSubmit: SubmitHandler<tipoSaude> = async data => {
     try {
+      setLoading(true)
       const pppp = {
         idPaciente: paciente?.sub,
         idade: data.idade,
@@ -64,7 +66,7 @@ function SaudeForm () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pppp)
       })
-      
+
       const resp = await fetch(URL_API_DADOS_SAUDE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,7 +74,7 @@ function SaudeForm () {
           id_paciente: paciente?.sub
         })
       })
-      
+
       if (resp.ok) {
         await fetch(`${URL_PACIENTES}/${paciente && paciente.sub}`, {
           method: 'PUT',
@@ -88,9 +90,8 @@ function SaudeForm () {
 
         if (paciente) paciente.dadosSaude = 's'
         setPreenchido(true)
-
       } else if (response.ok) {
-        const idDadosSaude:{id:string} = await response.json()
+        const idDadosSaude: { id: string } = await response.json()
         const id = idDadosSaude && idDadosSaude.id
 
         await fetch(`${URL_DADOS_SAUDE}/${id}`, {
@@ -105,13 +106,13 @@ function SaudeForm () {
           setSemConsulta(true)
         }
       }
-
     } catch (error) {
       if (error instanceof Error) {
         console.error('Erro ao cadastrar paciente.', error)
         setServerError(true)
       }
     } finally {
+      setLoading(false)
       fechar()
     }
   }
@@ -147,7 +148,7 @@ function SaudeForm () {
 
       {!enviado && (
         <button
-          className={`p-4 bg-cc-azul rounded-xl text-lg text-white fixed right-8`}
+          className={`flex items-center gap-2 p-2 bg-cc-azul rounded-xl text-white fixed right-[2vw] bottom-[18vh] shadow-md`}
           onClick={() => {
             if (!paciente) {
               navigate('/entrar')
@@ -162,8 +163,8 @@ function SaudeForm () {
       <section
         className={`form fixed shadow-2xl max-sm:-mt-[10vh] transition-transform duration-300 ease-in ${
           aberto && !enviado && !preenchido
-            ? 'translate-x-0'
-            : 'translate-x-[150vw]'
+            ? 'translate-x-0 right-[4vw]'
+            : 'translate-x-[100vw]'
         }`}
       >
         <div
@@ -216,18 +217,21 @@ function SaudeForm () {
                   Sexo <span className='text-red-500 font-bold'>*</span>
                 </label>
                 <div className='flex gap-2 items-center'>
-                  <div
-                    className={`p-2 rounded transition duration-200 ease-in ${
-                      selected == 1
-                        ? 'bg-cc-azul text-white'
-                        : 'bg-cc-cinza-escuro text-cc-preto'
-                    } ${
-                      errors.sexo
-                        ? 'outline-1 outline-red-500 bg-red-200'
-                        : 'outline-none bg-none'
-                    }`}
-                  >
-                    <label htmlFor='idSexoF'>Feminino</label>
+                  <div>
+                    <label
+                      htmlFor='idSexoF'
+                      className={`p-2 rounded transition duration-200 ease-in ${
+                        selected == 1
+                          ? 'bg-cc-azul text-white'
+                          : 'bg-cc-cinza-escuro text-cc-preto'
+                      } ${
+                        errors.sexo
+                          ? 'outline-1 outline-red-500 bg-red-200'
+                          : 'outline-none bg-none'
+                      }`}
+                    >
+                      Feminino
+                    </label>
                     <input
                       className='sr-only peer'
                       type='radio'
@@ -239,18 +243,21 @@ function SaudeForm () {
                       onClick={() => setSelected(1)}
                     />
                   </div>
-                  <div
-                    className={`p-2 rounded transition duration-200 ease-in ${
-                      selected == 2
-                        ? 'bg-cc-azul text-white'
-                        : 'bg-cc-cinza-escuro text-cc-preto'
-                    } ${
-                      errors.sexo
-                        ? 'outline-1 outline-red-500 bg-red-200'
-                        : 'outline-none bg-none'
-                    }`}
-                  >
-                    <label htmlFor='idSexoM'>Masculino</label>
+                  <div>
+                    <label
+                      htmlFor='idSexoM'
+                      className={`p-2 rounded transition duration-200 ease-in ${
+                        selected == 2
+                          ? 'bg-cc-azul text-white'
+                          : 'bg-cc-cinza-escuro text-cc-preto'
+                      } ${
+                        errors.sexo
+                          ? 'outline-1 outline-red-500 bg-red-200'
+                          : 'outline-none bg-none'
+                      }`}
+                    >
+                      Masculino
+                    </label>
                     <input
                       className='sr-only peer'
                       type='radio'
@@ -338,7 +345,9 @@ function SaudeForm () {
               )}
             </div>
           </fieldset>
-          <button type='submit'>Concluir</button>
+          <button type='submit'>
+            {loading ? 'Carregando...' : 'Concluir'}
+          </button>
         </form>
       </section>
     </aside>

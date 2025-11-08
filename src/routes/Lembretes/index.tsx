@@ -7,6 +7,8 @@ import ModalConfirmar from '../../components/ModalConfirmar/ModalConfirmar'
 import type { tipoConsulta } from '../../types/tipoConsulta'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import MensagemErro from '../../components/MensagemErro/MensagemErro'
+import { agora, limparData } from '../../utils/gerarData'
+import LoadingElement from '../../components/LoadingElement/LoadingElement'
 
 const URL_CONSULTAS = import.meta.env.VITE_API_BASE_CONSULTAS
 const URL_API_LEMBRETES = import.meta.env.VITE_API_ENVIAR_LEMBRETES
@@ -15,8 +17,9 @@ function Lembretes () {
   const navigate = useNavigate()
   const { paciente } = useAuth()
   const [enviado, setEnviado] = useState(false)
-  const [serverError, setServerError] = useState<boolean>(false)
-  const [listaLembretes, setListaLembretes] = useState<tipoConsulta[]>([])
+  const [serverError, setServerError] = useState(false)
+  const [listaConsultas, setListaConsultas] = useState<tipoConsulta[]>([])
+  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -25,62 +28,55 @@ function Lembretes () {
   } = useForm<tipoConsulta>()
 
   useEffect(() => {
-    const buscarConsultas = async () => {
+    const fetchConsultas = async () => {
       try {
-        const response = await fetch(
-          `${URL_CONSULTAS}?id_paciente=${paciente?.sub}`
+        setLoading(true)
+        const response = await fetch(URL_CONSULTAS)
+        const dados: tipoConsulta[] = await response.json()
+        const consultasSelecionadas = dados.filter(
+          (consulta: tipoConsulta) => consulta.idPaciente == paciente?.sub
         )
-        const dados = await response.json()
-        console.log(dados)
-        setListaLembretes(dados)
-      } catch {
-        console.error('Erro ao carregar seus lembretes.')
+        setListaConsultas(consultasSelecionadas)
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error('Erro ao carregar seus lembretes.', error)
+          setServerError(true)
+        }
+      } finally {
+        setLoading(false)
       }
     }
 
-    buscarConsultas()
-  }, [navigate, paciente])
+    fetchConsultas()
+  }, [])
 
   const onSubmit: SubmitHandler<tipoConsulta> = async data => {
-    setEnviado(false)
-
     try {
-      const consultaPayload = {
-        especialidade: data.especialidade,
-        data_consulta: data.dataConsulta,
-        ativa: 's',
-        id_paciente: paciente?.sub
-      }
-
-      const consultaRes = await fetch(`${URL_CONSULTAS}`, {
+      setLoading(true)
+      const response = await fetch(`${URL_CONSULTAS}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(consultaPayload)
+        body: JSON.stringify({
+          especialidade: data.especialidade,
+          dataConsulta: data.dataConsulta + ':00',
+          ativa: 's',
+          idPaciente: paciente?.sub,
+          dataAgendamento: agora
+      })
       })
 
-      if (!consultaRes.ok) throw new Error('Erro ao registrar consulta.')
+      if (!response.ok) throw new Error('Erro ao registrar consulta.')
 
-      const jsonPayload = {
-        nome: paciente?.nome,
-        email: paciente?.email,
-        telefone: paciente?.telefone,
-        especialidade: data.especialidade,
-        data_consulta: data.dataConsulta,
-        id_paciente: paciente?.sub
-      }
-
-      console.log(jsonPayload)
-
-      fetch(`${URL_API_LEMBRETES}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(jsonPayload)
-      })
+      await fetch(`${URL_API_LEMBRETES}`)
 
       setEnviado(true)
-    } catch {
-      console.error('Erro ao registrar lembrete.')
-      serverError ? setServerError(true) : setServerError(true)
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao registrar lembrete.', error)
+        setServerError(true)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -90,24 +86,26 @@ function Lembretes () {
       <div className='flex max-md:flex-col max-md:gap-[4vh] gap-[2vw] justify-center items-center w-full'>
         <section className='w-[50%] max-md:w-full'>
           <h2 className='titulo-2'>Seus lembretes</h2>
-          {listaLembretes.length > 0 ? (
+          {listaConsultas.length > 0 ? (
             <ul className='flex flex-col-reverse gap-[2vh] w-full mt-[4vh] h-[40vh] pr-[2vw] overflow-y-scroll'>
-              {listaLembretes.map(lembrete => (
+              {listaConsultas.map(lembrete => (
                 <ItemLembrete
                   key={lembrete.id}
                   especialidade={lembrete.especialidade}
-                  horario={lembrete.dataConsulta
-                    .replace(':', 'h')
-                    .replace(' ', ' às ')}
-                  status={lembrete.status}
+                  horario={limparData(lembrete.dataConsulta)}
+                  ativa={lembrete.ativa}
                 />
               ))}
             </ul>
+          ) : loading ? (
+            <LoadingElement />
           ) : (
-            <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
+            <p className='server-error'>
+              Conteúdo indisponível, servidor fora do ar.
+            </p>
           )}
         </section>
-        <section className='w-[32%] max-md:w-full'>
+        <section className='max-md:w-full'>
           <h2 className='titulo-2'>Criar novo lembrete?</h2>
           <section className='form'>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -162,7 +160,9 @@ function Lembretes () {
                   <MensagemErro error={errors.dataConsulta} />
                 </div>
               </fieldset>
-              <button type='submit'>Registrar</button>
+              <button type='submit'>
+                {loading ? 'Carregando...' : 'Registrar'}
+              </button>
             </form>
           </section>
         </section>

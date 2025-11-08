@@ -10,8 +10,9 @@ const URL_AVALIACOES = import.meta.env.VITE_API_BASE_AVALIACOES
 
 function Avaliacoes () {
   const [nota, setNota] = useState<number>(0)
-  const [enviado, setEnviado] = useState<boolean>(false)
-  const [serverError, setServerError] = useState<boolean>(false)
+  const [enviado, setEnviado] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [serverError, setServerError] = useState(false)
 
   const navigate = useNavigate()
 
@@ -22,6 +23,7 @@ function Avaliacoes () {
   } = useForm<tipoAvaliacao>()
 
   const onSubmit: SubmitHandler<tipoAvaliacao> = async data => {
+    setLoading(true)
     const avaliacao = {
       especialidade: data.especialidade,
       nota: data.nota,
@@ -36,9 +38,13 @@ function Avaliacoes () {
         body: JSON.stringify(avaliacao)
       })
       setEnviado(true)
-    } catch {
-      console.error('Erro ao enviar avaliação.')
-      serverError ? setServerError(true) : setServerError(true)
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao enviar avaliação', error)
+        setServerError(true)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -103,7 +109,9 @@ function Avaliacoes () {
               />
             </div>
           </fieldset>
-          <button type='submit'>Enviar avaliação</button>
+          <button type='submit'>
+            {loading ? 'Carregando...' : 'Enviar avaliação'}
+          </button>
         </form>
       </section>
 

@@ -3,41 +3,49 @@ import type { tipoConteudo } from '../../types/tipoConteudo'
 import { useParams } from 'react-router-dom'
 import { converterPath } from '../../utils/converterPath'
 import { useEffect, useState } from 'react'
-import Erro from '../Erro'
-const URL_CONTEUDOS = import.meta.env.VITE_API_BASE_CONTEUDOS;
+import LoadingElement from '../../components/LoadingElement/LoadingElement'
+import { limparData } from '../../utils/gerarData'
+import { FaPen } from 'react-icons/fa'
+const URL_CONTEUDOS = import.meta.env.VITE_API_BASE_CONTEUDOS
 
 function Guia () {
   const { name } = useParams<string>()
   const [guia, setGuia] = useState<tipoConteudo>()
+  const [loading, setLoading] = useState(false)
 
   const fetchGuia = async () => {
     try {
+      setLoading(true)
       const response = await fetch(`${URL_CONTEUDOS}`)
-      const data = await response.json()
+      const data: tipoConteudo[] = await response.json()
 
       const guiaSelecionado = data.find(
         (conteudo: tipoConteudo) => converterPath(conteudo.titulo) === name
-			)
+      )
       setGuia(guiaSelecionado)
-    } catch {
-      console.error('Erro ao buscar os dados do guia')
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Erro ao buscar os dados do guia', error)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchGuia()
-  })
+  }, [name])
 
-  if (!guia) {
-    return <Erro/>
-  }
+  const descricao = guia && guia.texto.split('\n')
 
-  const descricao = guia.texto.split('\n')
-
-  return (
+  return guia && descricao ? (
     <main>
       <Titulo titulo='Guia' />
       <h2 className='titulo-2'>{guia.titulo}</h2>
+      <div className='flex gap-4 my-2 self-start items-center ml-8 opacity-75'>
+        <FaPen/>
+        <p className=''>Publicado em: {limparData(guia.dataPublicacao)}</p>
+      </div>
       <div className='flex max-md:flex-col max-md:gap-[4vh] gap-[2vw] justify-center items-center min-h-[60vh] mt-[2vh]'>
         <section className='w-[20vw] max-md:w-[80vw] min-w-[280px] p-4 rounded-2xl bg-cc-azul'>
           {guia.video ? (
@@ -58,6 +66,10 @@ function Guia () {
         </section>
       </div>
     </main>
+  ) : loading ? (
+    <LoadingElement />
+  ) : (
+    <p className='server-error'>Conteúdo indisponível, servidor fora do ar.</p>
   )
 }
 
