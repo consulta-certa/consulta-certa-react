@@ -38,24 +38,7 @@ Plataforma desenvolvida para auxilixar pacientes do HC a acessar o Portal do Pac
 Para rodar o projeto, execute os comandos abaixo
 
 ```
-npm install
-npm run api
-```
-
-E execute
-
-```
-cd backend
-python -m venv venv
-venv\Scripts\activate
-python.exe -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-Defina as variáveis de ambiente necessárias e em seguida execute o arquivo app.py
-
-```
-python app.py
+npm install --legacy-peer-deps
 ```
 
 Por fim
@@ -83,10 +66,6 @@ Por conta do funcionamento interno da API VLibras, ela só é habilitada normalm
 ## 📂 Estrutura de diretórios
 ```
 react/
-├── backend/           # Backend em Flask (API)
-│   ├── app.py
-│   ├── requirements.txt
-│   └── venv/          # Ambiente virtual
 ├── public/            
 │   ├── fonts/         # Arquivos de fonte
 │   └── media/         # Imagens e videos
@@ -95,6 +74,7 @@ react/
 │   ├── components/    # Componentes reutilizáveis
 │   ├── context/       # Contexto de autentificação de entrada
 │   ├── routes/        # Páginas principais
+│   ├── types/         # Tipos personalizados
 │   ├── App.tsx
 │   ├── index.css
 │   ├── main.tsx
@@ -118,3 +98,4 @@ react/
 🌐 Aplicação Online: <a href='https://consulta-certa-dusky.vercel.app' target='_'>Consulta Certa</a>
 
 ▶️ Vídeo no YouTube: <a href='https://youtu.be/mXoOLKdYTPg' target='_'>Apresentação do site</a>
+
